@@ -43,6 +43,7 @@ ads-price-compare/
 ├── .gitignore      # Git ignore rules
 ├── package.json    # Dependencies and scripts
 └── README.md       # Project documentation
+```
 
 ## 👥 Team Roles & Contributions
 
