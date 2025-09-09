@@ -32,16 +32,18 @@ npm run dev
 The app will start at: http://localhost:3000
 
 ## 📂 Project Structure
+```text
 ads-price-compare/
-├─ docs/            # Design assets, SRS, diagrams
-├─ public/          # Frontend (HTML, CSS, JS)
-├─ scripts/         # Scraping jobs, automation
-├─ src/             # Backend (controllers, models, routes, utils)
-├─ test/            # Automated tests
-├─ .env.example     # Environment variable template
-├─ .gitignore       # Git ignore rules
-├─ package.json     # Dependencies and scripts
-└─ README.md        # Project documentation
+├── docs/           # Design assets, SRS, diagrams
+├── public/         # Frontend (HTML, CSS, JS)
+├── scripts/        # Scraping jobs, automation
+├── src/            # Backend (controllers, models, routes, utils)
+├── test/           # Automated tests
+├── .env.example    # Environment variable template
+├── .gitignore      # Git ignore rules
+├── package.json    # Dependencies and scripts
+└── README.md       # Project documentation
+```
 
 ## 👥 Team Roles & Contributions
 
