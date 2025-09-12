@@ -96,3 +96,7 @@ Track and maintain test coverage
 npm start → Run the server (production mode)
 npm run dev → Run the server with nodemon (auto-restart on changes)
 npm test → Run the test suite
+
+## Wireframes
+![Desktop home](doc/main_page.png)
+![Product detail](docs/item_detail.png)
