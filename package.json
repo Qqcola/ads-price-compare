@@ -1,9 +1,12 @@
 {
   "name": "ads-price-compare",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "mocha --exit"
   },
   "repository": {
     "type": "git",
@@ -16,7 +19,6 @@
     "url": "https://github.com/Qqcola/ads-price-compare/issues"
   },
   "homepage": "https://github.com/Qqcola/ads-price-compare#readme",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",

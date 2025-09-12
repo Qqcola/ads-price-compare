@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ADS – Australian Dietary Supplements</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Materialize CSS & Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="grey lighten-5">
+
+  <!-- Top Nav (easy to restyle later) -->
+  <nav class="white z-depth-0" role="navigation" data-component="navbar">
+    <div class="nav-wrapper container">
+      <a href="#" class="brand-logo black-text" id="brand">Australian Dietary Supplements</a>
+      <a href="#" data-target="mobile-nav" class="sidenav-trigger black-text"><i class="material-icons">menu</i></a>
+      <ul class="right hide-on-med-and-down">
+        <li><a href="#home" class="black-text" data-link="home">Home</a></li>
+        <li><a href="#tips" class="black-text" data-link="tips">Tips</a></li>
+        <li><a href="#compare" class="black-text" data-link="compare">Compare</a></li>
+        <li><a href="#chat" class="black-text" data-link="chat">Chatbot</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <ul class="sidenav" id="mobile-nav">
+    <li><a href="#home" data-link="home">Home</a></li>
+    <li><a href="#tips" data-link="tips">Tips</a></li>
+    <li></li><a href="#compare" data-link="compare">Compare</a></li>
+    <li><a href="#chat" data-link="chat">Chatbot</a></li>
+  </ul>
+
+  <!-- Hero / Search -->
+  <header id="home" class="section" data-component="hero">
+    <div class="container">
+      <div class="row valign-wrapper">
+        <div class="col s12 m7">
+          <h4 class="black-text">Find the best price on popular supplements!</h4>
+          <p class="grey-text text-darken-2">Search by product or brand. We’ll compare across retailers.</p>
+          <div class="input-field" data-component="search">
+            <i class="material-icons prefix">search</i>
+            <input id="search-input" type="text" placeholder="e.g., Vitamin D 1000 IU">
+          </div>
+          <div class="chip-group" id="quick-filters">
+            <!-- Optional quick filters; populated by JS -->
+          </div>
+        </div>
+        <div class="col s12 m5">
+          <!-- Placeholder illustration/card – can be replaced by design -->
+          <div class="card white z-depth-1" data-component="summary">
+            <div class="card-content">
+              <span class="card-title black-text">Quick summary</span>
+              <p class="grey-text text-darken-2" id="summary-text">
+                Start typing to see live results. Click a card to view retailer links.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Compare Section -->
+  <main id="compare" class="section" data-component="results">
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <h5 class="black-text">Results</h5>
+          <div id="results-grid" class="row">
+            <!-- Product cards will render here -->
+          </div>
+          <div class="center-align" id="results-empty" style="display:none;">
+            <p class="grey-text">No results. Try a different search.</p>
+          </div>
+          <div class="progress" id="results-loading" style="display:none;">
+            <div class="indeterminate"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Tips Section -->
+  <section id="tips" class="section" data-component="tips">
+    <div class="container">
+      <h5 class="black-text">Tips</h5>
+      <ul class="collection" id="tips-list">
+        <!-- Tips populated by JS (or static for now) -->
+      </ul>
+    </div>
+  </section>
+
+  <!-- Chatbot Section (placeholder) -->
+  <section id="chat" class="section" data-component="chat">
+    <div class="container">
+      <h5 class="black-text">Have a question? Ask our chatbot!</h5>
+      <div class="card white">
+        <div class="card-content">
+          <div id="chat-log" class="chat-log">
+            <!-- Messages render here -->
+          </div>
+          <div class="input-field" style="margin-top:1rem;">
+            <input id="chat-input" type="text" placeholder="Ask about products, prices, retailers...">
+          </div>
+          <div class="right-align">
+            <a class="btn waves-effect" id="chat-send"><i class="material-icons left">send</i>Send</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="page-footer white" data-component="footer">
+    <div class="container grey-text">
+      <div class="row">
+        <div class="col s12 m6">© <span id="year"></span> ADS</div>
+        <div class="col s12 m6 right-align">
+          <a href="#home" class="grey-text">Back to top</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <!-- App JS -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
