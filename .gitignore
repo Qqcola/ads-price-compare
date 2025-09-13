@@ -1,22 +1,20 @@
-# Node modules (dependencies - never commit)
+# Node
 node_modules/
-
-# Environment variables
-.env
-
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.log
 
-# Test coverage
+# Env
+.env
+
+# Coverage
 coverage/
 
-# OS files
+# OS cruft
 .DS_Store
 Thumbs.db
 
-# Editor settings
+# Editors
 .vscode/
 .idea/
