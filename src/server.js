@@ -6,28 +6,25 @@ const cors = require('cors');
 
 const app = express();
 
-// Middleware
+// Basic middleware
 app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
 
-// Serve static frontend (public/)
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Static frontend
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+app.use(express.static(PUBLIC_DIR));
 
-// --- Example API route
-app.get('/api/health', (req, res) => {
+// Example API (keep/replace with your routes)
+app.get('/api/health', (_req, res) => {
   res.json({ ok: true, message: 'Server is running' });
 });
 
-// --- Catch-all for client-side routes (Express 5 friendly):
-// Use a regex OR a final app.use, not a bare "*"
-app.get(/.*/, (req, res, next) => {
-  // let API requests fall through to 404 or other handlers
-  if (req.path.startsWith('/api/')) return next();
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+// Catch-all for client-side routes (not /api/*)
+app.get(/^\/(?!api\/).*/, (_req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
-// Port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 ADS app running at http://localhost:${PORT}`);
