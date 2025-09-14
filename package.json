@@ -1,9 +1,13 @@
 {
   "name": "ads-price-compare",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "description": "",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "mocha \"test/**/*.js\""
   },
   "repository": {
     "type": "git",
@@ -16,18 +20,17 @@
     "url": "https://github.com/Qqcola/ads-price-compare/issues"
   },
   "homepage": "https://github.com/Qqcola/ads-price-compare#readme",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "mongoose": "^8.18.0",
-    "morgan": "^1.10.1"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "chai": "^6.0.1",
-    "mocha": "^11.7.2",
-    "nodemon": "^3.1.10",
-    "supertest": "^7.1.4"
+    "chai": "^4.3.10",
+    "mocha": "^10.4.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^7.1.1"
   }
 }
+

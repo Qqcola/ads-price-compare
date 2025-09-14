@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ADS • Item</title>
+  <link rel="stylesheet" href="/css/item.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="/">Australian Dietary Supplement (ADS)</a>
+    <input class="search" placeholder="Search supplements, brands, retailers…" />
+    <nav class="actions">
+      <button class="btn">Filters</button>
+      <button class="btn">Sort</button>
+      <button class="btn">Cart</button>
+    </nav>
+  </header>
+
+  <main id="item-page" class="container">
+    <section class="media">
+      <img id="item-image" alt="" />
+    </section>
+
+    <section class="details">
+      <h1 id="item-title"></h1>
+      <p id="item-subtitle" class="muted"></p>
+
+      <div id="specs" class="specs"></div>
+
+      <div class="price-card">
+        <div class="row">
+          <label>Retailer</label>
+          <select id="retailer-select"></select>
+        </div>
+        <div class="row">
+          <label>Price</label>
+          <strong id="price"></strong>
+        </div>
+        <div class="row">
+          <label>Quantity</label>
+          <input id="qty" type="number" min="1" value="1" />
+        </div>
+        <button id="add-to-cart" class="primary">Add to cart</button>
+      </div>
+
+      <div class="rating">
+        <span id="stars"></span>
+        <span id="rating-text"></span>
+      </div>
+    </section>
+  </main>
+
+  <section class="container">
+    <h2>Overview</h2>
+    <div id="overview"></div>
+  </section>
+
+  <section class="container">
+    <h2>Rating</h2>
+    <ul id="reviews"></ul>
+  </section>
+
+  <script src="/js/item.js" defer></script>
+</body>
+</html>

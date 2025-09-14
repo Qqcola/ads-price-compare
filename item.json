@@ -1,0 +1,29 @@
+[
+  {
+    "id": "kangaroo-essence",
+    "title": "Healthy Care Premium Kangaroo Essence",
+    "subtitle": "Supports Vitality & Metabolic Health • 120 Capsules",
+    "image": "docs/KangarooEssence.png",
+    "rating": 4.5,
+    "specs": {
+      "Serving": "120 Capsules",
+      "Country": "Australia",
+      "Storage": "Below 25°C"
+    },
+    "retailers": [
+      { "name": "Chemist Warehouse", "price": 16.99 },
+      { "name": "Priceline", "price": 24.99 }
+    ],
+    "overview": [
+      "Premium quality ingredients for sustained energy.",
+      "High-quality kangaroo meat extract with essential nutrients.",
+      "Always read the label. Follow directions for use."
+    ],
+    "reviews": [
+      { "user": "User 1", "text": "Love it—fantastic." },
+      { "user": "User 2", "text": "It's okay." },
+      { "user": "User 3", "text": "Fabulous." },
+      { "user": "User 4", "text": "Best product ever." }
+    ]
+  }
+]
