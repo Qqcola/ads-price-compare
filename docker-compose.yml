@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongo_db
+    command: ["--bind_ip_all"]
+    ports:
+      - "${MONGODB_PORT}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+    env_file:
+      - .env
+    volumes:
+      - ./mongo_init:/docker-entrypoint-initdb.d:ro
+      - ./mongo_data:/data/db
+    restart: unless-stopped
+  
+  data_seeding:
+    build:
+      context: ./data_seeding
+      dockerfile: Dockerfile
+    container_name: data_seeding_gp
+    image: data_seeding_group_project:latest
+    restart: no
+    environment:
+      MONGODB_ROOT_USER: ${MONGODB_ROOT_USER}
+      MONGODB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      MONGODB_APP_USER: ${MONGODB_APP_USER}
+      MONGODB_APP_PASSWORD: ${MONGODB_APP_PASSWORD}
+      MONGODB_HOST: mongodb
+      # MONGODB_PORT: ${MONGODB_PORT}
+      MONGODB_PORT: 27017
+      DB_NAME: ${DB_NAME}
+      COLLECTION_ITEM_NAME: ${COLLECTION_ITEM_NAME}
+      COLLECTION_ITEM_LI_NAME: ${COLLECTION_ITEM_LI_NAME}
+    env_file:
+      - .env
+    volumes:
+      - ./data_process:/data_process
+    depends_on:
+      - mongodb
+
+
+
