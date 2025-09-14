@@ -29,6 +29,8 @@ Open .env and fill in the values (e.g., PORT, MONGO_URL).
 ### 4. Run the development server
 npm run dev
 
+The app will start at: http://localhost:3000
+
 ### 5. Initialize the MongoDB server and insert data into the database
 Install Docker Desktop on your local computer
 
@@ -57,10 +59,6 @@ If the terminal displays 2 collections items and items_li, the process is comple
 Use the 2 commands docker rm -f <container_name> and docker rmi -f <image-name> to delete the container and the image created for pushing data (data_seeding_gp and data_seeding_group_project:latest)
 
 To restart, start, and stop the MongDB server, execute the commands: docker restart mongo_db, docker start mongo_db, and docker stop mongo_db
-
-
-
-The app will start at: http://localhost:3000
 
 ## 📂 Project Structure
 ```text
