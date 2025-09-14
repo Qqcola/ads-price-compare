@@ -31,17 +31,31 @@ npm run dev
 
 ### 5. Initialize the MongoDB server and insert data into the database
 Install Docker Desktop on your local computer
+
 Start Docker desktop, open terminal and access the project folder
+
+Create an .env file with the variables MONGODB_ROOT_USER, MONGODB_ROOT_PASSWORD, MONGODB_APP_USER, MONGODB_APP_PASSWORD, MONGODB_HOST, MONGODB_PORT, DB_NAME, COLLECTION_ITEM_NAME, COLLECTION_ITEM_LI_NAME, and COLLECTION_CHAT_NAME
+
 Run the command: docker-compose up --build -d
+
 After the above command completes, check if the two containers data_seeding_gp and mongo_db are created using the command: docker ps -a
+
 Wait about 1 minute for the data push process to complete.
+
 To check if the process is complete, execute the following commands:
+
 docker exec -it mongo_db /bin/bash
+
 mongosh "mongodb://admin:sit725groupproject@localhost:27017/"
+
 use SIT725GP
+
 show collections
+
 If the terminal displays 2 collections items and items_li, the process is complete.
+
 Use the 2 commands docker rm -f <container_name> and docker rmi -f <image-name> to delete the container and the image created for pushing data (data_seeding_gp and data_seeding_group_project:latest)
+
 To restart, start, and stop the MongDB server, execute the commands: docker restart mongo_db, docker start mongo_db, and docker stop mongo_db
 
 
