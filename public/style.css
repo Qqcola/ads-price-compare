@@ -1,0 +1,120 @@
+/* ========== Font ========== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ========== Reset ========== */
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+
+/* ========== Background ========== */
+html, body { height:100%; }
+body{
+  background:url("/images/Dietery_Image1.png") center/cover no-repeat fixed;
+  overflow:hidden;
+  position:relative;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background:linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,.35) 40%, rgba(0,0,0,.45));
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ========== Navbar (brand left, buttons right) ========== */
+.nav{
+  position:fixed; top:0; left:0; right:0;
+  height:76px; padding:0 48px;
+  display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(rgba(39,39,39,.6), transparent);
+  z-index:100;
+}
+.nav-logo p{ color:#fff; font-size:24px; font-weight:600; }
+.nav-button{ display:flex; align-items:center; gap:12px; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:120px; height:40px; padding:0 20px;
+  border-radius:999px; border:2px solid #fff;
+  background:transparent; color:#fff;
+  font-weight:700; text-decoration:none; cursor:pointer;
+  transition:transform .08s ease, opacity .2s ease;
+}
+.btn:hover{ transform:translateY(-1px); opacity:.95; }
+.white-btn{ background:#fff; color:#111; border-color:#fff; }
+
+/* Remove any legacy nav menu artifacts */
+.nav-menu, .nav-menu-btn{ display:none !important; }
+
+/* ========== Centering Wrapper ========== */
+.wrapper{
+  position:relative; z-index:1;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding-top:96px; /* keep space under navbar */
+}
+
+/* ========== Glass Card ========== */
+.form-box{
+  width:min(92vw, 700px);
+  padding:28px 22px 24px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(8px);
+  border-radius:24px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+
+/* Top row (helper link + heading) */
+.top{
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin:0 6px 12px;
+}
+.top span{ font-size:14px; color:#333; }
+.top span a{ color:#0b57d0; font-weight:600; text-decoration:none; }
+header{ font-size:32px; font-weight:700; color:#111; }
+
+/* Inputs with icons */
+.input-box{ position:relative; margin:16px 6px; }
+.input-field{
+  width:100%; height:56px;
+  border-radius:999px; border:2px solid rgba(0,0,0,.08);
+  background:rgba(255,255,255,.75);
+  padding:0 52px 0 48px;
+  font-size:16px; color:#111; outline:none;
+  transition:border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.input-field::placeholder{ color:#666; }
+.input-field:focus{
+  border-color:rgba(11,87,208,.45);
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(11,87,208,.10);
+}
+.input-box i{
+  position:absolute; left:18px; top:50%; transform:translateY(-50%);
+  font-size:20px; color:#666;
+}
+
+/* Submit button */
+.submit{
+  width:100%; height:56px; border:none; border-radius:999px;
+  background:#fff; color:#111; font-weight:700; cursor:pointer;
+  box-shadow:0 12px 24px rgba(0,0,0,.2);
+  transition:transform .08s ease, filter .2s ease;
+}
+.submit:hover{ transform:translateY(-1px); filter:brightness(.98); }
+
+/* Two-column name row (signup) */
+.two-forms{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 6px; }
+
+/* Footer row in the card */
+.two-col{
+  margin:10px 6px 0; display:flex; align-items:center; justify-content:space-between;
+  color:#333; font-size:14px;
+}
+.two-col a{ color:#0b57d0; text-decoration:none; }
+
+/* Hide any legacy simple forms if they ever render */
+.form-container{ display:none; }
+
+/* ========== Responsive ========== */
+@media (max-width:900px){
+  .two-forms{ grid-template-columns:1fr; }
+  .wrapper{ padding-left:12px; padding-right:12px; }
+}
