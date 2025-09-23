@@ -23,32 +23,57 @@
         <header>Sign Up</header>
       </div>
 
+      <!-- ALERT / MESSAGE (error or success) -->
+      <% if (typeof msg !== 'undefined' && msg) { %>
+        <div class="alert <%= (msgType === 'error') ? 'alert-error' : 'alert-success' %>">
+          <%= msg %>
+        </div>
+      <% } %>
+
+      <% const v = (typeof values !== 'undefined' && values) ? values : { firstName: "", lastName: "", email: "" }; %>
+
       <form action="/signup" method="post" autocomplete="off">
         <div class="two-forms">
           <div class="input-box">
-            <input type="text" class="input-field" name="firstName" placeholder="Firstname" required>
+            <input type="text"
+                   class="input-field"
+                   name="firstName"
+                   placeholder="Firstname"
+                   value="<%= v.firstName || '' %>"
+                   required>
             <i class="bx bx-user"></i>
           </div>
           <div class="input-box">
-            <input type="text" class="input-field" name="lastName" placeholder="Lastname" required>
+            <input type="text"
+                   class="input-field"
+                   name="lastName"
+                   placeholder="Lastname"
+                   value="<%= v.lastName || '' %>"
+                   required>
             <i class="bx bx-user"></i>
           </div>
         </div>
-
-        <!-- Keep server compatibility: your backend expects username + password -->
         <div class="input-box">
-          <input type="text" class="input-field" name="username" placeholder="Email" required>
+          <input type="text"
+                 class="input-field"
+                 name="email"
+                 placeholder="Email"
+                 value="<%= v.email || '' %>"
+                 required>
           <i class="bx bx-envelope"></i>
         </div>
 
         <div class="input-box">
-          <input type="password" class="input-field" name="password" placeholder="Password" required>
+          <input type="password"
+                 class="input-field"
+                 name="password"
+                 placeholder="Password"
+                 required>
           <i class="bx bx-lock-alt"></i>
         </div>
 
         <div class="input-box">
           <input type="submit" class="submit" value="Register">
-        </div>
         </div>
       </form>
     </div>
