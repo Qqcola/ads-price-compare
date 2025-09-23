@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat Sidebar Layout — SPA with New Chat Home</title>
+  <link href="css/chatbot.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Conversation list">
+      <div class="brand">
+        <div class="logo">KB</div>
+        <h1>KAGGLE BOT</h1>
+        <button class="new-btn" id="newChatBtn">New</button>
+      </div>
+
+      <div class="conversations" id="conversations" role="list"></div>
+    </aside>
+
+    <main class="content" id="content">
+      <div class="home" id="homeView" style="display:none">
+        <div class="hero">
+          <h1>ChatBot Application</h1>
+          <p class="muted">Supporting advanced information search on dietary supplements from Chemist Warehouse, Chemist Outlet, etc</p>
+          <div class="input-row" style="margin: top 1%;">
+            <textarea id="homeInput" placeholder="Enter question..."></textarea>
+            <button class="send" id="homeSend">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-shell" id="chatShell" style="display:none">
+        <div class="chat-header">
+          <h2 id="chatTitle">Conversation</h2>
+          <div class="muted" id="chatSubtitle">...</div>
+        </div>
+        <div class="chat-area" id="chatArea"></div>
+        <form class="chat-input" id="chatInputRow">
+          <textarea id="chatInput" placeholder="Enter message..." required></textarea>
+          <button id="chatSend">Send</button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/test.js"></script>
+</body>
+</html>
