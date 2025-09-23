@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search – ADS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="ads-bg">
+
+  <!-- Top Nav -->
+  <nav class="white z-depth-0 ads-nav" role="navigation">
+    <div class="nav-wrapper container nav-flex">
+      <a href="/" class="brand-logo ads-brand">
+        <span class="brand-badge">ADS</span>
+        <span class="brand-text">Australian Dietary Supplements</span>
+      </a>
+
+      <!-- Inline search -->
+      <form class="nav-search hide-on-small-only" id="results-search-form">
+        <div class="input-field">
+          <i class="material-icons prefix ads-icon" id="results-search-go" style="cursor:pointer">search</i>
+          <input id="results-search-input" class="ads-input" type="text" placeholder="Search again…" autocomplete="off">
+        </div>
+      </form>
+
+      <!-- Right menu -->
+      <ul class="right hide-on-med-and-down nav-links">
+        <li><a href="/" class="ads-link">Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <ul class="sidenav" id="mobile-nav">
+    <li><a href="/" class="ads-link">Home</a></li>
+  </ul>
+
+  <!-- Results -->
+  <main class="section ads-section-gradient-blue">
+    <div class="container">
+      <h5 class="ads-heading">Results for: <span id="query-text"></span></h5>
+      <div id="results-grid" class="row"></div>
+      <div id="results-empty" class="center-align" style="display:none;">
+        <p class="ads-muted">No results. Try a different search.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="page-footer white ads-footer">
+    <div class="container ads-muted">
+      <div class="row">
+        <div class="col s12 m6">© <span id="year"></span> ADS</div>
+        <div class="col s12 m6 right-align"><a href="/" class="ads-link">Back to Home</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="/js/search.js"></script>
+</body>
+</html>

@@ -1,120 +1,149 @@
-/* ========== Font ========== */
+/* =========================================================
+   ADS — Clean Styles
+   - Poppins font
+   - Lightweight reset
+   - Optional hero background overlay
+   - Product grid/card layout (equal heights, tidy retail list)
+   ========================================================= */
+
+/* -------- Font -------- */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* ========== Reset ========== */
-*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
-
-/* ========== Background ========== */
-html, body { height:100%; }
-body{
-  background:url("/images/Dietery_Image1.png") center/cover no-repeat fixed;
-  overflow:hidden;
-  position:relative;
-}
-body::before{
-  content:"";
-  position:fixed; inset:0;
-  background:linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,.35) 40%, rgba(0,0,0,.45));
-  pointer-events:none;
-  z-index:0;
+/* -------- Reset / Base -------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #111;
+  background: #f6f8fb; /* fallback if no image */
 }
 
-/* ========== Navbar (brand left, buttons right) ========== */
-.nav{
-  position:fixed; top:0; left:0; right:0;
-  height:76px; padding:0 48px;
-  display:flex; align-items:center; justify-content:space-between;
-  background:linear-gradient(rgba(39,39,39,.6), transparent);
-  z-index:100;
+/* -------- Optional page background image + soft overlay -------- */
+/* Remove or tweak these if you prefer a flat background. */
+body.ads-bg {
+  background: url("/images/Dietery_Image1.png") center/cover no-repeat fixed;
+  position: relative;
 }
-.nav-logo p{ color:#fff; font-size:24px; font-weight:600; }
-.nav-button{ display:flex; align-items:center; gap:12px; }
-.btn{
-  display:inline-flex; align-items:center; justify-content:center;
-  min-width:120px; height:40px; padding:0 20px;
-  border-radius:999px; border:2px solid #fff;
-  background:transparent; color:#fff;
-  font-weight:700; text-decoration:none; cursor:pointer;
-  transition:transform .08s ease, opacity .2s ease;
-}
-.btn:hover{ transform:translateY(-1px); opacity:.95; }
-.white-btn{ background:#fff; color:#111; border-color:#fff; }
-
-/* Remove any legacy nav menu artifacts */
-.nav-menu, .nav-menu-btn{ display:none !important; }
-
-/* ========== Centering Wrapper ========== */
-.wrapper{
-  position:relative; z-index:1;
-  min-height:100vh;
-  display:flex; align-items:center; justify-content:center;
-  padding-top:96px; /* keep space under navbar */
+body.ads-bg::before {
+  /* soft gradient veil for readability over the image */
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,.35) 40%, rgba(0,0,0,.45));
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* ========== Glass Card ========== */
-.form-box{
-  width:min(92vw, 700px);
-  padding:28px 22px 24px;
-  background:rgba(255,255,255,.88);
-  backdrop-filter:blur(8px);
-  border-radius:24px;
-  box-shadow:0 24px 60px rgba(0,0,0,.35);
+/* Make main content sit above the overlay */
+.ads-bg .container,
+.ads-bg main,
+.ads-bg header,
+.ads-bg section,
+.ads-bg footer {
+  position: relative;
+  z-index: 1;
 }
 
-/* Top row (helper link + heading) */
-.top{
-  display:flex; align-items:baseline; justify-content:space-between;
-  margin:0 6px 12px;
-}
-.top span{ font-size:14px; color:#333; }
-.top span a{ color:#0b57d0; font-weight:600; text-decoration:none; }
-header{ font-size:32px; font-weight:700; color:#111; }
+/* =========================================================
+   Product Grid / Cards
+   - equal-height rows
+   - clamped titles
+   - price/retailer section aligned to bottom
+   - responsive fixed card height
+   ========================================================= */
 
-/* Inputs with icons */
-.input-box{ position:relative; margin:16px 6px; }
-.input-field{
-  width:100%; height:56px;
-  border-radius:999px; border:2px solid rgba(0,0,0,.08);
-  background:rgba(255,255,255,.75);
-  padding:0 52px 0 48px;
-  font-size:16px; color:#111; outline:none;
-  transition:border-color .2s ease, background .2s ease, box-shadow .2s ease;
-}
-.input-field::placeholder{ color:#666; }
-.input-field:focus{
-  border-color:rgba(11,87,208,.45);
-  background:#fff;
-  box-shadow:0 0 0 4px rgba(11,87,208,.10);
-}
-.input-box i{
-  position:absolute; left:18px; top:50%; transform:translateY(-50%);
-  font-size:20px; color:#666;
+/* Card height (adjust to taste) */
+:root { --ads-card-h: 420px; }
+
+/* Stretch columns to same height per row */
+#trending-grid, #results-grid { align-items: stretch; }
+
+/* Let cards fill their column */
+#trending-grid > .col,
+#results-grid  > .col { display: flex; }
+
+#trending-grid > .col > .card,
+#results-grid  > .col > .card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: var(--ads-card-h);
 }
 
-/* Submit button */
-.submit{
-  width:100%; height:56px; border:none; border-radius:999px;
-  background:#fff; color:#111; font-weight:700; cursor:pointer;
-  box-shadow:0 12px 24px rgba(0,0,0,.2);
-  transition:transform .08s ease, filter .2s ease;
+/* Image area: consistent height */
+.img-wrap {
+  height: 160px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.submit:hover{ transform:translateY(-1px); filter:brightness(.98); }
-
-/* Two-column name row (signup) */
-.two-forms{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 6px; }
-
-/* Footer row in the card */
-.two-col{
-  margin:10px 6px 0; display:flex; align-items:center; justify-content:space-between;
-  color:#333; font-size:14px;
+.img-wrap img {
+  max-height: 100%;
+  object-fit: contain;
 }
-.two-col a{ color:#0b57d0; text-decoration:none; }
 
-/* Hide any legacy simple forms if they ever render */
-.form-container{ display:none; }
+/* Card body stretches and pins retailer list to bottom */
+.card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
 
-/* ========== Responsive ========== */
-@media (max-width:900px){
-  .two-forms{ grid-template-columns:1fr; }
-  .wrapper{ padding-left:12px; padding-right:12px; }
+/* Clamp long titles to 2 lines */
+.product-title {
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 3em;          /* reserve height for 2 lines */
+  margin-bottom: 6px;
+}
+
+.rating-wrap  { margin-top: 4px; }
+.reviews-line { margin: 2px 0 6px; }
+
+/* Retailer list: stick to bottom, tidy rows */
+.retailer-list {
+  margin-top: auto;
+  max-height: 88px;         /* cap to keep all cards equal height */
+  overflow: auto;
+  padding-right: 4px;       /* little space for scrollbar */
+}
+
+.retailer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.retailer-name  { flex: 1 1 auto; color: #789; }
+.retailer-price { font-weight: 600; }
+/* .old-price removed */
+.retailer-view  { padding: 0 8px; margin-left: 8px; }
+.retailer-more  { font-size: 12px; margin-top: 4px; color: #789; }
+
+/* Slightly shorter cards on narrower screens */
+@media (max-width: 992px) {
+  :root { --ads-card-h: 400px; }
+}
+@media (max-width: 600px) {
+  :root { --ads-card-h: 380px; }
+}
+
+/* =========================================================
+   Small utilities (optional)
+   ========================================================= */
+
+.ads-muted { color: #7c8a9a; }
+.ads-heading { font-weight: 600; }
+
+/* Materialize tweaks (optional) */
+.card.white.ads-card {
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(12, 24, 41, .08);
 }
