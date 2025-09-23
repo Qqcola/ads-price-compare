@@ -1,42 +1,36 @@
-/* public/js/app.js
-   - Home page (Trending)
-   - Product cards show ALL retailers but capped per card (for equal height)
+/* public/js/search.js
+   - Results page: ALL matches
+   - Product cards show retailers capped to keep equal heights
    - Ratings + review counts
-   - Search: submit to /search.html?q=...
-   - Chatbot placeholder
 */
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   const MAX_RETAILERS_PER_CARD = 2;
-  const isNum = (x) => Number.isFinite(x); // <<< robust finite check
+  const isNum = (x) => Number.isFinite(x);
 
-  // ---------- helpers ----------
+  const params = new URLSearchParams(window.location.search);
+  const q = (params.get('q') || '').trim();
+  $("#year").textContent = new Date().getFullYear();
+  $("#query-text").textContent = q || "—";
+
   const toNumber = (v) => {
     if (v == null) return null;
     if (typeof v === "number") return Number.isFinite(v) ? v : null;
-    if (typeof v === "string") {
-      const m = v.match(/-?\d+(\.\d+)?/);
-      return m ? Number(m[0]) : null;
-    }
+    if (typeof v === "string") { const m = v.match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
     return null;
   };
 
   const fmtCurrency = (v) => {
     if (v == null || Number.isNaN(Number(v))) return "";
-    try {
-      return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" })
-        .format(Number(v));
-    } catch {
-      return `$${Number(v).toFixed(2)}`;
-    }
+    try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(v)); }
+    catch { return `$${Number(v).toFixed(2)}`; }
   };
 
   const titleizeKey = (k) =>
     String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // NOTE: old prices removed (no price_old usage)
   function extractRetailers(doc) {
     const priceObj = (doc && typeof doc.price === "object") ? doc.price : {};
     const urlObj   = (doc && typeof doc.url   === "object") ? doc.url   : {};
@@ -112,61 +106,40 @@
     `;
   }
 
-  const trendingGrid = $("#trending-grid");
-  async function loadTrending() {
+  const grid = $("#results-grid");
+  const empty = $("#results-empty");
+
+  async function runSearch() {
+    if (!q) { grid.innerHTML = ""; empty.style.display = "block"; return; }
     try {
-      const r = await fetch("/api/trending");
+      const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=200`);
       const docs = r.ok ? await r.json() : [];
-      trendingGrid.innerHTML = docs.map(card).join("");
+      if (!docs.length) { grid.innerHTML = ""; empty.style.display = "block"; return; }
+      empty.style.display = "none";
+      grid.innerHTML = docs.map(card).join("");
     } catch (e) {
       console.error(e);
-      trendingGrid.innerHTML = "";
+      grid.innerHTML = ""; empty.style.display = "block";
     }
   }
 
-  const input = $("#search-input");
-  const form  = $("#home-search-form");
-  const icon  = $("#home-search-go");
+  const form  = $("#results-search-form");
+  const input = $("#results-search-input");
+  const icon  = $("#results-search-go");
+  if (input) input.value = q;
+
   function goSearch() {
-    const q = input?.value?.trim();
-    if (!q) return;
-    window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+    const qq = input?.value?.trim();
+    if (!qq) return;
+    window.location.href = `/search.html?q=${encodeURIComponent(qq)}`;
   }
   if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); goSearch(); });
   if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); goSearch(); } });
   if (icon)  icon.addEventListener("click", goSearch);
 
-  $("#year").textContent = new Date().getFullYear();
-
-  const tipsList = $("#tips-list");
-  if (tipsList) {
-    tipsList.innerHTML = [
-      { title: "Compare per-unit price", text: "Normalise by mg/ml/capsule to compare fairly." },
-      { title: "Watch sizes", text: "Pack sizes differ—bigger isn’t always cheaper." },
-      { title: "Expiry windows", text: "Short-dated stock can be heavily discounted." },
-    ].map(t => `
-      <li class="collection-item">
-        <span class="title" style="font-weight:600">${t.title}</span>
-        <p class="ads-muted" style="margin:4px 0 0">${t.text}</p>
-      </li>`).join("");
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     $all(".sidenav").forEach(el => M.Sidenav.init(el));
   });
 
-  const chatLog = $("#chat-log"), chatInput = $("#chat-input"), chatSend = $("#chat-send");
-  function appendChat(who, text) {
-    if (!chatLog) return;
-    const div = document.createElement("div");
-    div.className = `chat-bubble ${who}`;
-    div.style.margin = "8px 0"; div.style.whiteSpace = "pre-wrap";
-    div.innerHTML = `<strong>${who === "user" ? "You" : "Bot"}:</strong> <span class="ads-muted">${text}</span>`;
-    chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight;
-  }
-  function sendChat(e){ if(e) e.preventDefault(); const q = chatInput?.value?.trim(); if(!q){appendChat('bot','Chatbot coming soon');return;} appendChat('user',q); chatInput.value=''; setTimeout(()=>appendChat('bot','Chatbot coming soon'),200);}
-  if (chatSend) chatSend.addEventListener("click", sendChat);
-  if (chatInput) chatInput.addEventListener("keydown", (e)=>{ if(e.key==='Enter') sendChat(e); });
-
-  loadTrending();
+  runSearch();
 })();
