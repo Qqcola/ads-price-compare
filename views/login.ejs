@@ -23,14 +23,29 @@
         <header>Login</header>
       </div>
 
+      <% if (typeof msg !== 'undefined' && msg) { %>
+        <div class="alert <%= (msgType === 'error') ? 'alert-error' : 'alert-success' %>">
+          <%= msg %>
+        </div>
+      <% } %>
+
       <form action="/login" method="post" autocomplete="off">
         <div class="input-box">
-          <input type="text" class="input-field" name="username" placeholder="Username or Email" required>
+          <input type="text"
+                 class="input-field"
+                 name="username"
+                 placeholder="Username or Email"
+                 value="<%= (typeof values !== 'undefined' && values.username) ? values.username : '' %>"
+                 required>
           <i class="bx bx-user"></i>
         </div>
 
         <div class="input-box">
-          <input type="password" class="input-field" name="password" placeholder="Password" required>
+          <input type="password"
+                 class="input-field"
+                 name="password"
+                 placeholder="Password"
+                 required>
           <i class="bx bx-lock-alt"></i>
         </div>
 
