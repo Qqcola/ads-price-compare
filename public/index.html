@@ -5,11 +5,8 @@
   <title>ADS – Australian Dietary Supplements</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Materialize CSS & Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
-
-  <!-- App styles -->
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body class="ads-bg">
@@ -17,7 +14,7 @@
   <!-- Top Nav -->
   <nav class="white z-depth-0 ads-nav" role="navigation" data-component="navbar">
     <div class="nav-wrapper container nav-flex">
-      <a href="#home" class="brand-logo ads-brand">
+      <a href="/" class="brand-logo ads-brand">
         <span class="brand-badge">ADS</span>
         <span class="brand-text">Australian Dietary Supplements</span>
       </a>
@@ -28,9 +25,9 @@
       </a>
 
       <!-- Inline search -->
-      <form class="nav-search hide-on-small-only" role="search" aria-label="Product search">
+      <form class="nav-search hide-on-small-only" role="search" aria-label="Product search" id="home-search-form">
         <div class="input-field">
-          <i class="material-icons prefix ads-icon">search</i>
+          <i class="material-icons prefix ads-icon" id="home-search-go" style="cursor:pointer">search</i>
           <input id="search-input" class="ads-input" type="text"
                  placeholder="Search supplements, brands, retailers…" autocomplete="off">
         </div>
@@ -38,9 +35,8 @@
 
       <!-- Right menu -->
       <ul class="right hide-on-med-and-down nav-links">
-        <li><a href="#home" class="ads-link">Home</a></li>
+        <li><a href="/" class="ads-link">Home</a></li>
         <li><a href="#tips" class="ads-link">Tips</a></li>
-        <li><a href="#compare" class="ads-link">Compare</a></li>
         <li><a href="#chat" class="ads-link">Chatbot</a></li>
       </ul>
     </div>
@@ -48,9 +44,8 @@
 
   <!-- Mobile Nav -->
   <ul class="sidenav" id="mobile-nav">
-    <li><a href="#home" class="ads-link">Home</a></li>
+    <li><a href="/" class="ads-link">Home</a></li>
     <li><a href="#tips" class="ads-link">Tips</a></li>
-    <li><a href="#compare" class="ads-link">Compare</a></li>
     <li><a href="#chat" class="ads-link">Chatbot</a></li>
   </ul>
 
@@ -60,30 +55,19 @@
       <div class="row valign-wrapper">
         <div class="col s12 m7">
           <h3 class="ads-title">Find the best price on popular supplements!</h3>
-          <p class="ads-muted">Search by product or brand. We’ll compare across retailers.</p>
+          <p class="ads-muted">Type a query and hit Enter to view all matching products.</p>
         </div>
         <div class="col s12 m5">
           <div class="card white ads-card">
             <div class="card-content">
               <span class="card-title ads-heading">Quick summary</span>
-              <p class="ads-muted">Start typing to see live results. Click a card to view retailer links.</p>
+              <p class="ads-muted">Trending products below. Search and press Enter to see full results.</p>
             </div>
           </div>
         </div>
       </div>
     </div>
   </header>
-
-  <!-- Compare -->
-  <main id="compare" class="section ads-section-gradient-blue">
-    <div class="container">
-      <h5 class="ads-heading">Results</h5>
-      <div id="results-grid" class="row"></div>
-      <div class="center-align" id="results-empty" style="display:none;">
-        <p class="ads-muted">No results. Try a different search.</p>
-      </div>
-    </div>
-  </main>
 
   <!-- Trending -->
   <section id="trending" class="section ads-section-gradient-pink">
@@ -129,9 +113,7 @@
     </div>
   </footer>
 
-  <!-- Materialize JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <!-- Client app JS -->
   <script src="/js/app.js"></script>
 </body>
 </html>
