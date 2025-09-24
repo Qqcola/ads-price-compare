@@ -1,21 +1,20 @@
-// --- Data model: each conversation has id,title,snippet,time,messages[] ---
 const fallbackData = [
   {
     id: "c1",
-    title: "Check 1",
+    title: "Test 1",
     time: "2025-09-19 14:38",
-    snippet: "Check 1: ABCDED",
+    snippet: "Test 2",
     messages: [
       {
-        author: "Response",
-        text: "Check 3",
+        author: "User",
+        text: "Test 3",
         time: "2025-09-19 14:38",
       },
     ],
   },
   {
     id: "c2",
-    title: "Check 4",
+    title: "Test 4",
     time: "2025-09-12 09:02",
     snippet: "Realtime chat, games, IOT",
     messages: [
@@ -44,6 +43,25 @@ const newChatBtn = document.getElementById("newChatBtn");
 // in-memory conversations (simulate DB)
 let conversations = [...fallbackData];
 let currentId = null; // when null => show home
+
+const userid = "check";
+const socket = io();
+
+// --- Backend fetch helper: GET /api/conversations/:id ---
+async function fetchConversationFromServer(id) {
+  try {
+    const res = await fetch(`/api/conversations/${encodeURIComponent(id)}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error("Network response not ok");
+    const json = await res.json();
+    // Expect shape: { id, title, time, snippet, messages: [{author,text,time}], content? }
+    return json;
+  } catch (err) {
+    console.warn("Fetch conv fail", err);
+    return null;
+  }
+}
 
 // Render sidebar list
 function renderList() {
@@ -82,7 +100,7 @@ function updateSelectedInList() {
     );
 }
 
-// get id from URL (support /chat/:id)
+// get id from URL (support /?id= or /chat/:id)
 function idFromUrl() {
   const params = new URLSearchParams(window.location.search);
   if (params.get("id")) return params.get("id");
@@ -113,23 +131,6 @@ function renderMessages(conv) {
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-// Fetch conversation by id from backend API
-async function fetchConversation(id) {
-  try {
-    const res = await fetch(`/api/conversations/${encodeURIComponent(id)}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Network response not ok");
-    const json = await res.json();
-    // expected shape: { id, title, time, content, snippet }
-    return json;
-  } catch (err) {
-    console.warn("Fetch failed, using fallback for", id, err);
-    // fallback to client-side data
-    return conversations.find((d) => d.id === id) || null;
-  }
-}
-
 // select conversation; if push true, update history
 async function selectConversation(id, push = false) {
   currentId = id;
@@ -143,28 +144,48 @@ async function selectConversation(id, push = false) {
     history.pushState({ id }, "", `/chat/${encodeURIComponent(id)}`);
   }
 
-  // Fetch from backend (simulate) — here we use local conversations array
-  const conv = await fetchConversation(id);
+  // Try to find locally first
+  let conv = conversations.find((c) => c.id === id);
+  if (!conv) {
+    // fetch from server if not in-memory
+    const remote = await fetchConversationFromServer(id);
+    if (remote) {
+      // normalize remote into our structure
+      conv = {
+        id: remote.id,
+        title: remote.title || "Conversation " + remote.id,
+        time: remote.time || new Date().toLocaleString(),
+        snippet:
+          remote.snippet ||
+          (remote.messages && remote.messages.length
+            ? remote.messages.slice(-1)[0].text
+            : ""),
+        messages: remote.messages || [],
+      };
+      // insert into our list (at top)
+      conversations.unshift(conv);
+      renderList();
+    }
+  }
+
   if (conv) {
     chatTitle.textContent = conv.title;
     chatSubtitle.textContent = conv.time || "";
     renderMessages(conv);
   } else {
-    chatTitle.textContent = "Cannot find the conversation";
-    chatSubtitle.textContent = "";
-    chatArea.innerHTML = '<div class="message">Cannot find the content.</div>';
+    goHome();
   }
 }
 
 // go home / new chat
-function goHome() {
+function goHome(push = true) {
   currentId = null;
   updateSelectedInList();
   // show home
   chatShell.style.display = "none";
   homeView.style.display = "flex";
   // push clean URL (no id)
-  history.pushState({}, "", "/");
+  if (push) history.pushState({}, "", "/chat");
 }
 
 // create new conversation and optionally send initial message
@@ -200,6 +221,10 @@ homeSend.addEventListener("click", () => {
   selectConversation(conv.id, true);
   // focus chat input for follow-ups
   setTimeout(() => chatInput.focus(), 120);
+  socket.emit("message_chatbot", text);
+
+  // Optionally: POST to backend to persist the new conversation
+  // fetch('/api/conversations', {method:'POST', body: JSON.stringify(conv), headers:{'Content-Type':'application/json'}})
 });
 
 // handle send in chat view (append message to existing conversation)
@@ -216,35 +241,79 @@ chatSend.addEventListener("click", () => {
   renderList();
   renderMessages(conv);
   chatInput.value = "";
-  // focus back
   chatInput.focus();
+  socket.emit("message_chatbot", text);
+
+  // Optionally: send to backend to persist message
+  // fetch(`/api/conversations/${encodeURIComponent(currentId)}/messages`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})
 });
 
-// New Chat button
+// socket.on('chunk_response', ({ chunk }) => {
+//   out.value += chunk;
+//   // auto-scroll
+//   out.scrollTop = out.scrollHeight;
+// });
+
+socket.on("chunk_response", ({ chunk }) => {
+  let conv = conversations.find((c) => c.id === currentId);
+  if (!conv) {
+    const newConv = createConversation("");
+    currentId = newConv.id;
+    conv = newConv;
+    homeView.style.display = "none";
+    chatShell.style.display = "flex";
+    chatTitle.textContent = conv.title;
+    chatSubtitle.textContent = conv.time || "";
+    updateSelectedInList();
+  }
+  const lastIdx = conv.messages.length - 1;
+  let lastMsg = conv.messages[lastIdx];
+
+  if (!lastMsg || lastMsg.author !== "Assistant") {
+    const now = new Date().toLocaleString();
+    const assistantMsg = {
+      author: "Assistant",
+      text: chunk || "",
+      time: now,
+    };
+    conv.messages.push(assistantMsg);
+    lastMsg = assistantMsg;
+  } else {
+    // otherwise append to existing assistant message text
+    lastMsg.text = (lastMsg.text || "") + (chunk || "");
+    lastMsg.time = new Date().toLocaleString();
+  }
+
+  conv.snippet = lastMsg.text;
+  conv.time = lastMsg.time;
+  renderList();
+  renderMessages(conv);
+});
+
+socket.on("done", () => console.log("stream done"));
+socket.on("error", (e) => console.error("err", e));
+
 newChatBtn.addEventListener("click", () => {
   goHome();
   homeInput.focus();
 });
 
-// Handle popstate for back/forward
 window.addEventListener("popstate", (e) => {
   const id = (e.state && e.state.id) || idFromUrl();
   if (id) selectConversation(id, false);
-  else goHome();
+  else goHome(false);
 });
 
-// Initialize: render list and decide whether to show a conversation from URL or home
-(function init() {
+(async function init() {
   renderList();
   const urlId = idFromUrl();
+  console.log("Log: ", urlId);
   if (urlId) {
-    // show existing conv if present, else try fetch (omitted)
-    const found = conversations.find((c) => c.id === urlId);
-    if (found) selectConversation(urlId, false);
-    else goHome();
+    // try load from local first; selectConversation will fetch from server if not found
+    await selectConversation(urlId, false);
   } else {
     // show home by default
-    goHome();
+    goHome(false);
   }
 })();
 

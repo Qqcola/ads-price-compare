@@ -5,6 +5,23 @@
   --accent: #2898f5;
   --dark: #0f1720;
   --glass: rgba(0, 0, 0, 0.03);
+  --ads-bg: #f9faff;
+  --ads-surface: #ffffff;
+  --ads-text: #1f2430;
+  --ads-muted: #6c7485;
+  --ads-border: #e9eef6;
+  --ads-radius: 16px;
+
+  --ads-blue-100: #eef4ff;
+  --ads-blue-400: #a8d4ff;
+  --ads-blue-600: #6aaeff;
+
+  --ads-pink-100: #fff0f6;
+  --ads-pink-400: #ffb6cf;
+  --ads-pink-600: #ff82ac;
+
+  --ads-primary: var(--ads-blue-600);
+  --ads-accent: var(--ads-pink-400);
 }
 * {
   box-sizing: border-box;
@@ -250,4 +267,21 @@ body {
   .content {
     height: calc(100vh - 56px);
   }
+}
+.ads-brand {
+  position: static !important;
+  transform: none !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-width: 200px;
+  color: var(--ads-text) !important;
+}
+.brand-badge {
+  background: linear-gradient(90deg, var(--ads-blue-400), var(--ads-pink-400));
+  color: #163150;
+  font-weight: 800;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
 }

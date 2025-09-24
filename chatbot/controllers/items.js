@@ -1,7 +1,7 @@
 const {genai} = require("@google/genai");
 const Items = require('../models/Items');
 
-const ai = new genai({ apiKey: ""});
+// const ai = new genai({ apiKey: ""});
 
 async function itemsRag(userText, limit=10) {
   try {
@@ -24,17 +24,17 @@ exports.inference = async (req, res) => {
   try {
     const userText = req.body.query.trim();
     if (!userText) return res.status(200).json({ statusCode: 200, data: [], message: 'No query provided' });
-    const limit = parseInt(req.query.limit || '5', 10);
-    const content = await itemsRag(userText, limit=limit);
-    const prompt = ""
+    let limit = parseInt(req.query.limit || '5', 10);
+    let content = await itemsRag(userText, limit=limit);
+    // console.log(content[0]['general_information'])
+    // content = content.json['data'][0]['general_information']
+    // const prompt = ""
     
-    const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        content: prompt
-    })
-
-    const results = await Items.aggregate(pipeline);
-    return res.json({ statusCode: 200, data: results, message: 'Success' });
+    // const response = await ai.models.generateContent({
+    //     model: "gemini-2.0-flash",
+    //     content: prompt
+    // })
+    return res.json({ statusCode: 200, data: content[0]['general_information'], message: 'Success' });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ statusCode: 500, message: 'Server error', error: err.message });

@@ -1,4 +1,4 @@
-:root{
+:root {
   --ads-bg: #f9faff;
   --ads-surface: #ffffff;
   --ads-text: #1f2430;
@@ -18,42 +18,117 @@
   --ads-accent: var(--ads-pink-400);
 }
 
-html,body{background:var(--ads-bg); color:var(--ads-text);}
-.ads-bg{background:var(--ads-bg);}
+html,
+body {
+  background: var(--ads-bg);
+  color: var(--ads-text);
+}
+.ads-bg {
+  background: var(--ads-bg);
+}
 
 /* NAVBAR FIX */
-.ads-nav{border-bottom:1px solid var(--ads-border);}
-.nav-flex{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-.ads-brand{position:static!important; transform:none!important; display:flex; align-items:center; gap:.5rem; flex:0 0 auto; min-width:200px; color:var(--ads-text)!important;}
-.brand-badge{background:linear-gradient(90deg, var(--ads-blue-400), var(--ads-pink-400)); color:#163150; font-weight:800; padding:.25rem .55rem; border-radius:999px;}
-.nav-search{flex:1 1 auto; max-width:500px;}
-.nav-links{flex:0 0 auto;}
+.ads-nav {
+  border-bottom: 1px solid var(--ads-border);
+}
+.nav-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ads-brand {
+  position: static !important;
+  transform: none !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-width: 200px;
+  color: var(--ads-text) !important;
+}
+.brand-badge {
+  background: linear-gradient(90deg, var(--ads-blue-400), var(--ads-pink-400));
+  color: #163150;
+  font-weight: 800;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+}
+.nav-search {
+  flex: 1 1 auto;
+  max-width: 500px;
+}
+.nav-links {
+  flex: 0 0 auto;
+}
 
 /* Make nav links visible on white background */
-.ads-link{color: var(--ads-text) !important; font-weight:600;}
-.ads-link:hover{color: var(--ads-primary) !important;}
+.ads-link {
+  color: var(--ads-text) !important;
+  font-weight: 600;
+}
+.ads-link:hover {
+  color: var(--ads-primary) !important;
+}
 
 /* HERO */
-.ads-hero{
-  padding:2.2rem 0 1.4rem;
-  background:linear-gradient(160deg,var(--ads-blue-100),var(--ads-pink-100));
+.ads-hero {
+  padding: 2.2rem 0 1.4rem;
+  background: linear-gradient(160deg, var(--ads-blue-100), var(--ads-pink-100));
 }
-.ads-title{font-weight:900;}
-.ads-heading{font-weight:800;}
-.ads-muted{color:var(--ads-muted)!important;}
+.ads-title {
+  font-weight: 900;
+}
+.ads-heading {
+  font-weight: 800;
+}
+.ads-muted {
+  color: var(--ads-muted) !important;
+}
 
 /* SECTION GRADIENTS */
-.ads-section-gradient-blue{background:linear-gradient(180deg,var(--ads-blue-100),#fff);}
-.ads-section-gradient-pink{background:linear-gradient(180deg,var(--ads-pink-100),#fff);}
+.ads-section-gradient-blue {
+  background: linear-gradient(180deg, var(--ads-blue-100), #fff);
+}
+.ads-section-gradient-pink {
+  background: linear-gradient(180deg, var(--ads-pink-100), #fff);
+}
 
 /* CARDS */
-.ads-card{border-radius:var(--ads-radius); border:1px solid var(--ads-border);}
-.ads-collection .collection-item{border-left:none;border-right:none;}
+.ads-card {
+  border-radius: var(--ads-radius);
+  border: 1px solid var(--ads-border);
+}
+.ads-collection .collection-item {
+  border-left: none;
+  border-right: none;
+}
 
 /* CHAT */
-.chat-log{min-height:160px; max-height:260px; overflow-y:auto; padding:.8rem; background:#fff; border:1px solid var(--ads-border); border-radius:var(--ads-radius);}
-.chat-msg.left{background:rgba(106,174,255,.15);}
-.chat-msg.right{background:rgba(255,182,207,.2); float:right; clear:both;}
+.chat-log {
+  min-height: 160px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0.8rem;
+  background: #fff;
+  border: 1px solid var(--ads-border);
+  border-radius: var(--ads-radius);
+}
+.chat-msg.left {
+  background: rgba(106, 174, 255, 0.15);
+}
+.chat-msg.right {
+  background: rgba(255, 182, 207, 0.2);
+  float: right;
+  clear: both;
+}
 
 /* BUTTON */
-.ads-btn{background:linear-gradient(90deg,var(--ads-primary),var(--ads-accent))!important; border-radius:999px;}
+.ads-btn {
+  background: linear-gradient(
+    90deg,
+    var(--ads-primary),
+    var(--ads-accent)
+  ) !important;
+  border-radius: 999px;
+}

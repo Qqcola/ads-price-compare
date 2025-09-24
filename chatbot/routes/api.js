@@ -3,7 +3,7 @@ const router = express.Router();
 
 const itemControllers = require('../controllers/items');
 
-router.post('/search', itemControllers.itemsRag);
+router.post('/inference', itemControllers.inference);
 // router.get('/test', itemControllers.test);
 
 
