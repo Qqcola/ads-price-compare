@@ -1,6 +1,8 @@
 const {genai} = require("@google/genai");
 const Items = require('../models/Items');
 
+const ai = new genai({ apiKey: ""});
+
 async function itemsRag(userText, limit=10) {
   try {
     const pipeline = [
@@ -24,7 +26,12 @@ exports.inference = async (req, res) => {
     if (!userText) return res.status(200).json({ statusCode: 200, data: [], message: 'No query provided' });
     const limit = parseInt(req.query.limit || '5', 10);
     const content = await itemsRag(userText, limit=limit);
+    const prompt = ""
     
+    const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        content: prompt
+    })
 
     const results = await Items.aggregate(pipeline);
     return res.json({ statusCode: 200, data: results, message: 'Success' });
