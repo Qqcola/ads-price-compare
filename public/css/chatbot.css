@@ -285,3 +285,15 @@ body {
   padding: 0.25rem 0.55rem;
   border-radius: 999px;
 }
+.trash-icon {
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+  fill: currentColor;
+}
+.trash-btn {
+  color: #666;
+}
+.trash-btn:hover {
+  color: #c00;
+} /* đổi màu khi hover */

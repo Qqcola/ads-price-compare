@@ -10,6 +10,8 @@ router.get('/trending', itemControllers.itemsTrending);
 router.post('/pushConversation', conversationControllers.addConversation);
 router.put('/updateConversation', conversationControllers.updateConversation);
 router.post('/findConversationByUser', conversationControllers.findConversationsByUser);
+router.put('/deleteConversationById', conversationControllers.deleteConversationById);
+
 // router.get('/test', itemControllers.test).
 
 module.exports = router;

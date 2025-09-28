@@ -1,29 +1,15 @@
 const fallbackData = [
   {
     id: "c1",
-    title: "Test 1",
-    time: "2025-09-19 14:38",
-    snippet: "Test 2",
-    messages: [
-      {
-        author: "User",
-        text: "Test 3",
-        time: "2025-09-19 14:38",
-      },
-    ],
+    name: "Test 1",
+    edit_time: "2025-09-19 14:38",
+    history: [['USER', "Test 123232323232323232"], ['BOT', "Test 2"]],
   },
   {
     id: "c2",
-    title: "Test 4",
-    time: "2025-09-12 09:02",
-    snippet: "Realtime chat, games, IOT",
-    messages: [
-      {
-        author: "User",
-        text: "Socket application",
-        time: "2025-09-12 09:02",
-      },
-    ],
+    name: "Test 2",
+    edit_time: "2025-09-20 14:38",
+    history: [['USER', "Test 3"], ['BOT', "Test 4"]],
   },
 ];
 
@@ -41,29 +27,55 @@ const homeSend = document.getElementById("homeSend");
 const newChatBtn = document.getElementById("newChatBtn");
 
 // in-memory conversations (simulate DB)
-let conversations = [...fallbackData];
+let conversations = null;
 let currentId = null; // when null => show home
+let addNewChat = false;
 
 const userid = "check";
 const socket = io();
 
 // --- Backend fetch helper: GET /api/conversations/:id ---
-async function fetchConversationFromServer(id) {
+async function fetchConversationFromServer() {
   try {
-    const res = await fetch(`/api/conversations/${encodeURIComponent(id)}`, {
-      cache: "no-store",
+    const res = await fetch(`/api/findConversationByUser`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({'user_id': userid}),
     });
     if (!res.ok) throw new Error("Network response not ok");
     const json = await res.json();
-    // Expect shape: { id, title, time, snippet, messages: [{author,text,time}], content? }
+    // console.log(json[0])
     return json;
   } catch (err) {
     console.warn("Fetch conv fail", err);
-    return null;
+    return fallbackData;
   }
 }
 
-// Render sidebar list
+async function deleteConversation(cid) {
+  try {
+    const res = await fetch(`/api/deleteConversationById`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({'id': cid}),
+    });
+    if (!res.ok){
+      console.log("Network response not ok");
+      return;
+    }
+    conversations = conversations.filter(c => c.id != cid);
+    if(currentId == cid){
+      goHome();
+    }
+    renderList();
+  } catch (err) {
+    console.warn("Delete conv fail", err);
+  }
+}
 function renderList() {
   convContainer.innerHTML = "";
   conversations.forEach((c) => {
@@ -71,22 +83,47 @@ function renderList() {
     el.className = "conv";
     el.dataset.id = c.id;
 
+    // meta (title + snippet)
     const meta = document.createElement("div");
     meta.className = "meta";
     const h = document.createElement("h4");
-    h.textContent = c.title;
+    h.textContent = c.name;
     const p = document.createElement("p");
-    p.textContent = c.snippet;
+    p.textContent = c.edit_time;
     meta.appendChild(h);
     meta.appendChild(p);
 
-    const time = document.createElement("div");
-    time.className = "time muted";
-    time.textContent = c.time;
+    // actions (trash button)
+    const actions = document.createElement("div");
+    actions.className = "actions";
 
+    const trash = document.createElement("div");
+    trash.className = "trash-btn";
+    trash.type = "button";
+    trash.title = "Delete conversation";
+
+    // sử dụng img SVG đã tải xuống
+    const img = document.createElement("img");
+    img.src = "../images/trash-solid-full.svg";
+    img.alt = "delete";
+    img.className = "trash-icon";
+    img.draggable = false;
+
+    trash.appendChild(img);
+
+    // stopPropagation để click vào nút không làm select conversation
+    trash.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      const ok = window.confirm("Are you sure to delete this conversation?");
+      if (!ok) return;
+      deleteConversation(c.id);
+    });
+
+    actions.appendChild(trash);
     el.appendChild(meta);
-    el.appendChild(time);
+    el.appendChild(actions);
     el.addEventListener("click", () => selectConversation(c.id, true));
+
     convContainer.appendChild(el);
   });
   updateSelectedInList();
@@ -112,17 +149,18 @@ function idFromUrl() {
 // render chat messages into chatArea
 function renderMessages(conv) {
   chatArea.innerHTML = "";
-  if (!conv || !conv.messages) return;
-  conv.messages.forEach((m) => {
+  if (!conv || !conv.history) return;
+  conv.history.forEach((m) => {
+    // console.log(m[0] == "BOT")
     const mEl = document.createElement("div");
     mEl.className =
-      "message" + (m.author === "You" || m.author === "Me" ? " me" : "");
+      "message" + (m[0] == "USER" ? " me" : "");
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.textContent = `${m.author} • ${m.time}`;
+    meta.textContent = `${m[0]}`;
     const body = document.createElement("div");
     body.className = "body";
-    body.textContent = m.text;
+    body.textContent = m[1];
     mEl.appendChild(meta);
     mEl.appendChild(body);
     chatArea.appendChild(mEl);
@@ -146,31 +184,9 @@ async function selectConversation(id, push = false) {
 
   // Try to find locally first
   let conv = conversations.find((c) => c.id === id);
-  if (!conv) {
-    // fetch from server if not in-memory
-    const remote = await fetchConversationFromServer(id);
-    if (remote) {
-      // normalize remote into our structure
-      conv = {
-        id: remote.id,
-        title: remote.title || "Conversation " + remote.id,
-        time: remote.time || new Date().toLocaleString(),
-        snippet:
-          remote.snippet ||
-          (remote.messages && remote.messages.length
-            ? remote.messages.slice(-1)[0].text
-            : ""),
-        messages: remote.messages || [],
-      };
-      // insert into our list (at top)
-      conversations.unshift(conv);
-      renderList();
-    }
-  }
-
   if (conv) {
-    chatTitle.textContent = conv.title;
-    chatSubtitle.textContent = conv.time || "";
+    chatTitle.textContent = conv.name;
+    chatSubtitle.textContent = conv.edit_time || "";
     renderMessages(conv);
   } else {
     goHome();
@@ -190,23 +206,23 @@ function goHome(push = true) {
 
 // create new conversation and optionally send initial message
 function createConversation(initialText) {
-  const id = "c" + Date.now();
+  const id = crypto.randomUUID();
   const now = new Date();
   const timeStr = now.toLocaleString();
-  const title = initialText
+  const name = initialText
     ? initialText.slice(0, 30) + (initialText.length > 30 ? "..." : "")
     : "New conversation";
   const conv = {
-    id,
-    title,
-    time: timeStr,
-    snippet: initialText || "",
-    messages: [],
+    id: id,
+    name,
+    edit_time: timeStr,
+    history: [],
   };
   if (initialText)
-    conv.messages.push({ author: "You", text: initialText, time: timeStr });
+    conv.history.push(["USER", initialText]);
   conversations.unshift(conv); // newest on top
   renderList();
+  addNewChat = true;
   return conv;
 }
 
@@ -221,7 +237,8 @@ homeSend.addEventListener("click", () => {
   selectConversation(conv.id, true);
   // focus chat input for follow-ups
   setTimeout(() => chatInput.focus(), 120);
-  socket.emit("message_chatbot", text);
+  const params = {'text': text, 'history': []}
+  socket.emit("message_chatbot", params);
 
   // Optionally: POST to backend to persist the new conversation
   // fetch('/api/conversations', {method:'POST', body: JSON.stringify(conv), headers:{'Content-Type':'application/json'}})
@@ -234,27 +251,24 @@ chatSend.addEventListener("click", () => {
   const conv = conversations.find((c) => c.id === currentId);
   if (!conv) return;
   const now = new Date().toLocaleString();
-  conv.messages.push({ author: "You", text, time: now });
-  conv.snippet = text;
-  conv.time = now;
+  const params = {'text': text, 'history': conv.history}
+  conv.history.push(["USER", text]);
+  // conv.name = text;
+  conv.edit_time = now;
   // update list preview and messages
+  conversations = conversations.filter(c => c.id != currentId);
+  conversations.unshift(conv);
   renderList();
   renderMessages(conv);
   chatInput.value = "";
   chatInput.focus();
-  socket.emit("message_chatbot", text);
+  socket.emit("message_chatbot", params);
 
   // Optionally: send to backend to persist message
   // fetch(`/api/conversations/${encodeURIComponent(currentId)}/messages`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})
 });
 
-// socket.on('chunk_response', ({ chunk }) => {
-//   out.value += chunk;
-//   // auto-scroll
-//   out.scrollTop = out.scrollHeight;
-// });
-
-socket.on("chunk_response", ({ chunk }) => {
+socket.on("chunk_response", ({ process_chunk }) => {
   let conv = conversations.find((c) => c.id === currentId);
   if (!conv) {
     const newConv = createConversation("");
@@ -262,35 +276,62 @@ socket.on("chunk_response", ({ chunk }) => {
     conv = newConv;
     homeView.style.display = "none";
     chatShell.style.display = "flex";
-    chatTitle.textContent = conv.title;
+    chatTitle.textContent = conv.name;
     chatSubtitle.textContent = conv.time || "";
     updateSelectedInList();
   }
-  const lastIdx = conv.messages.length - 1;
-  let lastMsg = conv.messages[lastIdx];
+  const lastIdx = conv.history.length - 1;
+  let lastMsg = conv.history[lastIdx];
 
-  if (!lastMsg || lastMsg.author !== "Assistant") {
-    const now = new Date().toLocaleString();
-    const assistantMsg = {
-      author: "Assistant",
-      text: chunk || "",
-      time: now,
-    };
-    conv.messages.push(assistantMsg);
+  const now = new Date().toLocaleString();
+  console.log(process_chunk);
+  if(lastMsg[0] != 'BOT'){
+    const assistantMsg = ["BOT", process_chunk || ""];
+    conv.history.push(assistantMsg);
     lastMsg = assistantMsg;
-  } else {
-    // otherwise append to existing assistant message text
-    lastMsg.text = (lastMsg.text || "") + (chunk || "");
-    lastMsg.time = new Date().toLocaleString();
   }
-
-  conv.snippet = lastMsg.text;
-  conv.time = lastMsg.time;
+  else{
+    lastMsg[1] = (lastMsg[1] || "") + (process_chunk || "");
+  }
+  conv.edit_time = now
   renderList();
   renderMessages(conv);
 });
 
-socket.on("done", () => console.log("stream done"));
+socket.on("done", async () => {
+  console.log("stream done");
+  let conv = conversations.find((c) => c.id === currentId);
+  const lastIdx = conv.history.length - 1;
+  if(addNewChat){
+    const convPush = {id: conv.id, user_id: userid, edit_time: conv.edit_time, name: conv.name,
+                      user_text: conv.history[lastIdx - 1][1], bot_text: conv.history[lastIdx][1]}
+    const response = await fetch('/api/pushConversation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(convPush),
+    });
+    if(response.status != 200){
+      console.log(`Push error: ${response.status}`)
+    }
+  }
+  else{
+    const convUpdate = {id: conv.id, user_text: conv.history[lastIdx - 1][1], bot_text: conv.history[lastIdx][1], edit_time: conv.edit_time}
+    const response = await fetch('/api/updateConversation', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(convUpdate),
+    });
+    if(response.status != 200){
+      console.log(`Update error: ${response.status}`)
+    }
+  }
+  addNewChat = false;
+});
+
 socket.on("error", (e) => console.error("err", e));
 
 newChatBtn.addEventListener("click", () => {
@@ -305,6 +346,8 @@ window.addEventListener("popstate", (e) => {
 });
 
 (async function init() {
+  // load all conversations
+  conversations = await fetchConversationFromServer();
   renderList();
   const urlId = idFromUrl();
   console.log("Log: ", urlId);
