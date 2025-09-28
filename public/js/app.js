@@ -1,48 +1,42 @@
-/* public/js/app.js
-   - Home page (Trending)
-   - Product cards show ALL retailers but capped per card (for equal height)
-   - Ratings + review counts
-   - Search: submit to /search.html?q=...
-   - Chatbot placeholder
-*/
+// public/js/app.js — trending with "Save" to My List (no per-card My List link)
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   const MAX_RETAILERS_PER_CARD = 2;
-  const isNum = (x) => Number.isFinite(x); // <<< robust finite check
+  const TITLE_MAX_CHARS = 58;
+  const PLACEHOLDER_IMG = "/images/placeholder.png";
+  const isNum = (x) => Number.isFinite(x);
 
-  // ---------- helpers ----------
   const toNumber = (v) => {
     if (v == null) return null;
     if (typeof v === "number") return Number.isFinite(v) ? v : null;
-    if (typeof v === "string") {
-      const m = v.match(/-?\d+(\.\d+)?/);
-      return m ? Number(m[0]) : null;
-    }
+    if (typeof v === "string") { const m = v.match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
     return null;
   };
-
   const fmtCurrency = (v) => {
     if (v == null || Number.isNaN(Number(v))) return "";
-    try {
-      return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" })
-        .format(Number(v));
-    } catch {
-      return `$${Number(v).toFixed(2)}`;
-    }
+    try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(v)); }
+    catch { return `$${Number(v).toFixed(2)}`; }
   };
-
-  const titleizeKey = (k) =>
-    String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
-  // NOTE: old prices removed (no price_old usage)
+  const titleizeKey = (k) => String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const getImageUrl = (doc) => (/^https?:\/\//i.test(doc?.img_url || "")) ? doc.img_url : PLACEHOLDER_IMG;
+  const truncateTitle = (s, max = TITLE_MAX_CHARS) => {
+    s = (s || "").trim(); if (s.length <= max) return s;
+    const clipped = s.slice(0, max + 1), lastSpace = clipped.lastIndexOf(" ");
+    const base = lastSpace > 40 ? clipped.slice(0, lastSpace) : s.slice(0, max);
+    return `${base}…`;
+  };
+  const renderStars = (r) => {
+    const n = toNumber(r); if (!isNum(n)) return "";
+    const v = Math.max(0, Math.min(5, n)), full = Math.floor(v);
+    return `<span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(5-full)}</span>
+            <span class="ads-muted" style="margin-left:6px">${v.toFixed(1)}</span>`;
+  };
   function extractRetailers(doc) {
     const priceObj = (doc && typeof doc.price === "object") ? doc.price : {};
     const urlObj   = (doc && typeof doc.url   === "object") ? doc.url   : {};
-
     const keys = new Set([...Object.keys(priceObj || {}), ...Object.keys(urlObj || {})]);
-
     const rows = [];
     for (const key of keys) {
       const price = toNumber(priceObj[key]);
@@ -53,23 +47,12 @@
     return rows;
   }
 
-  const renderStars = (r) => {
-    const n = toNumber(r);
-    if (!isNum(n)) return "";
-    const v = Math.max(0, Math.min(5, n));
-    const full = Math.floor(v);
-    return `
-      <span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(5-full)}</span>
-      <span class="ads-muted" style="margin-left:6px">${v.toFixed(1)}</span>
-    `;
-  };
-
-  function card(doc) {
-    const name    = doc.name || doc.title || "Unnamed product";
-    const img     = (typeof doc.img_url === "string" && /^https?:\/\//i.test(doc.img_url)) ? doc.img_url : "";
-    const rating  = toNumber(doc.avg_reviews);
-    const reviews = toNumber(doc.count_reviews);
-
+  function card(doc, idx) {
+    const fullName = doc.name || doc.title || "Unnamed product";
+    const name     = truncateTitle(fullName);
+    const imgUrl   = getImageUrl(doc);
+    const rating   = toNumber(doc.avg_reviews);
+    const reviews  = toNumber(doc.count_reviews);
     const retailersAll = extractRetailers(doc);
     const retailers    = retailersAll.slice(0, MAX_RETAILERS_PER_CARD);
     const moreCount    = Math.max(0, retailersAll.length - retailers.length);
@@ -78,13 +61,12 @@
       ? `<div class="retailer-list">
           ${retailers.map((r) => {
               const priceText = r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>";
-              const link      = r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">View</a>` : "";
-              return `
-                <div class="retailer-row">
-                  <span class="retailer-name">${r.name}</span>
-                  <span class="retailer-price">${priceText}</span>
-                  ${link}
-                </div>`;
+              const link      = r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">VIEW</a>` : "";
+              return `<div class="retailer-row">
+                        <span class="retailer-name">${r.name}</span>
+                        <span class="retailer-price">${priceText}</span>
+                        ${link}
+                      </div>`;
             }).join("")}
           ${moreCount ? `<div class="retailer-more ads-muted">+ ${moreCount} more retailer${moreCount > 1 ? 's' : ''}</div>` : ``}
         </div>`
@@ -96,77 +78,58 @@
 
     return `
       <div class="col s12 m6 l3">
-        <div class="card white ads-card hoverable">
-          ${img ? `
-            <div class="card-image img-wrap">
-              <img src="${img}" alt="${name}" loading="lazy" referrerpolicy="no-referrer">
-            </div>` : ``}
-          <div class="card-content card-body">
-            <span class="card-title product-title">${name}</span>
-            ${isNum(rating) ? `<div class="rating-wrap">${renderStars(rating)}</div>` : ``}
+        <div class="card white hoverable">
+          <div class="card-image"><img src="${imgUrl}" alt="${fullName}" title="${fullName}" loading="lazy" referrerpolicy="no-referrer"></div>
+          <div class="card-content">
+            <span class="card-title" title="${fullName}">${name}</span>
+            <div class="rating-wrap">${isNum(rating) ? renderStars(rating) : ""}</div>
             ${reviewsHtml}
             ${retailersHtml}
           </div>
+          <div class="card-action">
+            <a href="#!" class="fav-add" data-idx="${idx}"><i class="material-icons left">favorite</i>Save</a>
+          </div>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
-  const trendingGrid = $("#trending-grid");
+  const trendingGrid = document.getElementById("trending-grid");
+  let LAST = [];
+
   async function loadTrending() {
     try {
       const r = await fetch("/api/trending");
-      const docs = r.ok ? await r.json() : [];
-      trendingGrid.innerHTML = docs.map(card).join("");
-    } catch (e) {
-      console.error(e);
-      trendingGrid.innerHTML = "";
-    }
+      LAST = r.ok ? await r.json() : [];
+      trendingGrid.innerHTML = LAST.map((d, i) => card(d, i)).join("");
+      wireFavs();
+    } catch (e) { console.error(e); trendingGrid.innerHTML = ""; }
   }
 
-  const input = $("#search-input");
-  const form  = $("#home-search-form");
-  const icon  = $("#home-search-go");
-  function goSearch() {
-    const q = input?.value?.trim();
-    if (!q) return;
-    window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+  function wireFavs() {
+    $all(".fav-add", trendingGrid).forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        const idx = Number(el.dataset.idx);
+        const doc = LAST[idx];
+        if (!doc || !window.ADSFav) return;
+        ADSFav.upsert(doc);
+        if (window.M && M.toast) M.toast({ html: "Saved to My List" });
+      });
+    });
   }
+
+  // Search box behaviour (unchanged)
+  const input = $("#search-input"), form = $("#home-search-form"), icon = $("#home-search-go");
+  function goSearch() { const q = input?.value?.trim(); if (!q) return; window.location.href = `/search.html?q=${encodeURIComponent(q)}`; }
   if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); goSearch(); });
   if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); goSearch(); } });
   if (icon)  icon.addEventListener("click", goSearch);
 
-  $("#year").textContent = new Date().getFullYear();
-
-  const tipsList = $("#tips-list");
-  if (tipsList) {
-    tipsList.innerHTML = [
-      { title: "Compare per-unit price", text: "Normalise by mg/ml/capsule to compare fairly." },
-      { title: "Watch sizes", text: "Pack sizes differ—bigger isn’t always cheaper." },
-      { title: "Expiry windows", text: "Short-dated stock can be heavily discounted." },
-    ].map(t => `
-      <li class="collection-item">
-        <span class="title" style="font-weight:600">${t.title}</span>
-        <p class="ads-muted" style="margin:4px 0 0">${t.text}</p>
-      </li>`).join("");
-  }
+  const y = document.getElementById("year"); if (y) y.textContent = new Date().getFullYear();
 
   document.addEventListener("DOMContentLoaded", () => {
-    $all(".sidenav").forEach(el => M.Sidenav.init(el));
+    Array.from(document.querySelectorAll(".sidenav")).forEach(el => window.M && M.Sidenav && M.Sidenav.init(el));
   });
-
-  const chatLog = $("#chat-log"), chatInput = $("#chat-input"), chatSend = $("#chat-send");
-  function appendChat(who, text) {
-    if (!chatLog) return;
-    const div = document.createElement("div");
-    div.className = `chat-bubble ${who}`;
-    div.style.margin = "8px 0"; div.style.whiteSpace = "pre-wrap";
-    div.innerHTML = `<strong>${who === "user" ? "You" : "Bot"}:</strong> <span class="ads-muted">${text}</span>`;
-    chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight;
-  }
-  function sendChat(e){ if(e) e.preventDefault(); const q = chatInput?.value?.trim(); if(!q){appendChat('bot','Chatbot coming soon');return;} appendChat('user',q); chatInput.value=''; setTimeout(()=>appendChat('bot','Chatbot coming soon'),200);}
-  if (chatSend) chatSend.addEventListener("click", sendChat);
-  if (chatInput) chatInput.addEventListener("keydown", (e)=>{ if(e.key==='Enter') sendChat(e); });
 
   loadTrending();
 })();
