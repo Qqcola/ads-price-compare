@@ -93,7 +93,6 @@ function renderList() {
     meta.appendChild(h);
     meta.appendChild(p);
 
-    // actions (trash button)
     const actions = document.createElement("div");
     actions.className = "actions";
 
@@ -102,7 +101,6 @@ function renderList() {
     trash.type = "button";
     trash.title = "Delete conversation";
 
-    // sử dụng img SVG đã tải xuống
     const img = document.createElement("img");
     img.src = "../images/trash-solid-full.svg";
     img.alt = "delete";
@@ -111,7 +109,6 @@ function renderList() {
 
     trash.appendChild(img);
 
-    // stopPropagation để click vào nút không làm select conversation
     trash.addEventListener("click", (ev) => {
       ev.stopPropagation();
       const ok = window.confirm("Are you sure to delete this conversation?");

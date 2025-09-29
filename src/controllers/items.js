@@ -16,10 +16,7 @@ exports.itemsSearch = async (req, res) => {
       [
         {
           $match: {
-            $or: [
-              { name: rx },
-              { brand: rx },
-            ],
+            $or: [{ name: rx }, { brand: rx }],
           },
         },
         {
@@ -42,5 +39,35 @@ exports.itemsTrending = async (_req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to fetch trending" });
+  }
+};
+
+exports.itemsSearchById = async (req, res) => {
+  try {
+    const itemId = (req.query.id || "").trim();
+    if (!itemId) return res.json([]);
+    const item = await Items.findOne({ id: itemId });
+    // console.log(item);
+    if (!item) {
+      return res.status(404).json({ message: "Cannot find this item" });
+    }
+    if (!item.brand) return res.status(200).json({ item: item, similarItems: [] });
+    let similarItems = await Items.find({brand: item.brand, id: { $ne: item.id }}).exec();
+
+    similarItems = similarItems.map((similarItem) => {
+      const originalCategories = item.categories || [];
+      const similarCategories = similarItem.categories || [];
+      const commonCategories = originalCategories.filter((category) =>
+        similarCategories.includes(category)
+      );
+      const similarItemObj = similarItem.toObject();
+      similarItemObj.categoryMatchScore = commonCategories.length;
+      return similarItemObj;
+    });
+    similarItems.sort((a, b) => b.categoryMatchScore - a.categoryMatchScore);
+    res.status(200).json({item: item, similarItems: similarItems});
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ error: e });
   }
 };

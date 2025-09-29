@@ -27,14 +27,16 @@ app.use(express.static(PUBLIC_DIR));
 app.use("/api", routes);
 
 app.get("/chat", (req, res) => {
-  console.log("Access to /chatbot");
   res.sendFile(path.join(PUBLIC_DIR, "chatbot.html"));
 });
 
 app.get("/chat/:conversationId", (req, res) => {
   const conversationId = req.params["conversationId"];
-  console.log(`Chat conversation ID: ${conversationId}`);
   res.sendFile(path.join(PUBLIC_DIR, "chatbot.html"));
+});
+
+app.get("/item", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "item.html"));
 });
 
 io.on("connection", (socket) => {
