@@ -1,125 +1,162 @@
-// public/js/list.js — "My List" page with all retailers (price + link)
+// public/js/list.js — render saved items in a Materialize "collection" (no cards) + search bar
 (function () {
-  const listEl = document.getElementById("list");
-  const countEl = document.getElementById("count");
-  const clearBtn = document.getElementById("clear-all");
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
   const PLACEHOLDER_IMG = "/images/placeholder.png";
 
-  // ---- helpers ----
-  const isNum = (x) => Number.isFinite(x);
+  // ---------- helpers ----------
   const toNumber = (v) => {
     if (v == null) return null;
     if (typeof v === "number") return Number.isFinite(v) ? v : null;
-    if (typeof v === "string") {
-      const m = v.match(/-?\d+(\.\d+)?/);
-      return m ? Number(m[0]) : null;
-    }
+    if (typeof v === "string") { const m = v.match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
     return null;
   };
+
   const fmtCurrency = (v) => {
-    if (v == null || Number.isNaN(Number(v))) return "—";
+    if (v == null || Number.isNaN(Number(v))) return "";
     try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(v)); }
     catch { return `$${Number(v).toFixed(2)}`; }
   };
-  const titleizeKey = (k) => String(k || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // Build retailer rows (merge the product's price + url maps)
-  function extractRetailers(p) {
-    const priceObj = (p && typeof p.price === "object") ? p.price : {};
-    const urlObj   = (p && typeof p.url   === "object") ? p.url   : {};
+  const titleizeKey = (k) => String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const getImageUrl = (doc) => (/^https?:\/\//i.test(doc?.img_url || ""))
+    ? doc.img_url
+    : PLACEHOLDER_IMG;
+
+  function extractRetailers(doc) {
+    const priceObj = (doc && typeof doc.price === "object") ? doc.price : {};
+    const urlObj   = (doc && typeof doc.url   === "object") ? doc.url   : {};
     const keys = new Set([...Object.keys(priceObj || {}), ...Object.keys(urlObj || {})]);
-    const out = [];
+    const rows = [];
     for (const key of keys) {
       const price = toNumber(priceObj[key]);
       const url   = typeof urlObj[key] === "string" ? urlObj[key] : "";
-      if (price != null || url) out.push({ key, name: titleizeKey(key), price, url });
+      if (price != null || url) rows.push({ key, name: titleizeKey(key), price, url });
     }
-    out.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
-    return out;
+    rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    return rows;
   }
 
-  function cheapest(p) {
-    const prices = Object.values(p.price || {}).map(toNumber).filter(isNum);
-    return prices.length ? Math.min(...prices) : null;
+  // Canonical key for remove (match favs.js)
+  const norm = (s) => (s || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+  const canonImg = (u) => {
+    if (!u) return "";
+    try { const url = new URL(u); return `${url.hostname.replace(/^www\./, "").toLowerCase()}${url.pathname.toLowerCase()}`; }
+    catch { return (u.split("?")[0] || "").toLowerCase(); }
+  };
+  const keyFor = (p) => `k:${norm(p?.name || p?.title)}|${canonImg(p?.img_url)}`;
+
+  // ---------- render ----------
+  const listEl = $("#list-collection");
+  const empty = $("#empty-state");
+
+  function ratingBlock(avg) {
+    const n = toNumber(avg);
+    if (!Number.isFinite(n)) return "";
+    const v = Math.max(0, Math.min(5, n));
+    const full = Math.floor(v);
+    return `<span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(5-full)}</span>
+            <span class="ads-muted" style="margin-left:6px">${v.toFixed(1)}</span>`;
+  }
+
+  function itemRow(doc, idx) {
+    const name = doc.name || doc.title || "Unnamed product";
+    const img = getImageUrl(doc);
+    const rows = extractRetailers(doc);
+    const reviews = toNumber(doc.count_reviews);
+
+    const retailersHtml = rows.length
+      ? rows.map(r => `
+          <div class="retailer-row">
+            <span class="retailer-name">${r.name}</span>
+            <span class="retailer-price">${r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>"}</span>
+            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">VIEW</a>` : ""}
+          </div>
+        `).join("")
+      : `<p class="ads-muted" style="margin-top:6px">No retailer data.</p>`;
+
+    const reviewsText = Number.isFinite(reviews) ? `${reviews} reviews` : `Not yet reviewed`;
+
+    return `
+      <li class="collection-item avatar" style="padding-right:56px;">
+        <img src="${img}" alt="${name}" class="circle" referrerpolicy="no-referrer"
+             onerror="this.src='${PLACEHOLDER_IMG}'" />
+        <span class="title" title="${name}" style="font-weight:600">${name}</span>
+        <p class="ads-muted" style="margin:.2rem 0 0;">
+          ${ratingBlock(doc.avg_reviews)} ${reviewsText}
+        </p>
+        <div class="retailer-list">
+          ${retailersHtml}
+        </div>
+        <a href="#!" class="secondary-content remove-item" data-idx="${idx}" title="Remove">
+          <i class="material-icons">close</i>
+        </a>
+      </li>
+    `;
   }
 
   function render() {
-    const items = ADSFav.all(); // stored full product docs
-    countEl.textContent = `(${items.length})`;
-
+    const items = (window.ADSFav ? ADSFav.all() : []) || [];
     if (!items.length) {
-      listEl.innerHTML = `<li class="collection-item">No saved items yet.</li>`;
+      listEl.innerHTML = "";
+      empty.style.display = "block";
       return;
     }
+    empty.style.display = "none";
+    listEl.innerHTML = items.map((d, i) => itemRow(d, i)).join("");
 
-    listEl.innerHTML = items.map((p) => {
-      const fullName = p.name || p.title || "Unnamed product";
-      const img = (/^https?:\/\//i.test(p.img_url || "")) ? p.img_url : PLACEHOLDER_IMG;
-      const cheapestPrice = cheapest(p);
-
-      const reviews = toNumber(p.count_reviews);
-      const reviewsText = isNum(reviews) ? `${reviews} reviews` : "Not yet reviewed";
-
-      const retailers = extractRetailers(p);
-      const retailersHtml = retailers.length
-        ? `<div class="retailer-list">
-             ${retailers.map(r => `
-               <div class="retailer-row">
-                 <span class="retailer-name">${r.name}</span>
-                 <span class="retailer-price">${r.price != null ? fmtCurrency(r.price) : "<span class='retailer-muted'>—</span>"}</span>
-                 ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">VIEW</a>` : `<span></span>`}
-               </div>
-             `).join("")}
-           </div>`
-        : `<div class="retailer-muted" style="margin-top:6px;">No retailer data.</div>`;
-
-      return `
-        <li class="collection-item">
-          <div class="list-card">
-            <img src="${img}" alt="${fullName}">
-            <div class="list-main">
-              <div class="list-title" title="${fullName}">${fullName}</div>
-              <div class="list-meta">
-                ${cheapestPrice != null ? `Cheapest: ${fmtCurrency(cheapestPrice)}` : "Cheapest: —"} • ${reviewsText}
-              </div>
-              ${retailersHtml}
-              <div class="note-row">
-                <input type="text" class="note" placeholder="Add a note…" value="${p.note || ""}" data-id="${p._id}">
-                <input type="number" class="qty" min="1" value="${p.qty || 1}" style="width:100px" data-id="${p._id}">
-                <a href="#!" class="btn-small save" data-id="${p._id}">Save</a>
-                <a href="#!" class="btn-small red lighten-1 remove" data-id="${p._id}"><i class="material-icons">delete</i></a>
-              </div>
-            </div>
-          </div>
-        </li>`;
-    }).join("");
-
-    // Wire buttons
-    listEl.querySelectorAll(".save").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.id;
-        const note = listEl.querySelector(`.note[data-id="${id}"]`)?.value || "";
-        const qty = Number(listEl.querySelector(`.qty[data-id="${id}"]`)?.value || 1) || 1;
-        ADSFav.updateMeta(id, { note, qty });
-        if (window.M && M.toast) M.toast({ html: "Saved" });
-      });
-    });
-    listEl.querySelectorAll(".remove").forEach(btn => {
-      btn.addEventListener("click", () => {
-        ADSFav.remove(btn.dataset.id);
+    // Remove buttons
+    $all(".remove-item", listEl).forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        const idx = Number(el.dataset.idx);
+        const cur = ADSFav.all();
+        const doc = cur[idx];
+        if (!doc) return;
+        const idOrKey = doc._id || keyFor(doc);
+        ADSFav.remove(idOrKey);
         render();
-        if (window.M && M.toast) M.toast({ html: "Removed" });
+        if (window.M && M.toast) M.toast({ html: "Removed from My List" });
       });
     });
   }
 
-  clearBtn.addEventListener("click", () => {
-    ADSFav.clear();
-    render();
-    if (window.M && M.toast) M.toast({ html: "Cleared" });
+  // Clear all
+  const clearBtn = $("#clear-all");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!confirm("Clear all saved items?")) return;
+      ADSFav.clear();
+      render();
+      if (window.M && M.toast) M.toast({ html: "Cleared" });
+    });
+  }
+
+  // ---------- on-page search bar wiring ----------
+  function wireSearchBar() {
+    const form  = $("#page-search-form");
+    const input = $("#page-search-input");
+    const icon  = $("#page-search-go");
+
+    const go = () => {
+      const q = input?.value?.trim();
+      if (!q) return;
+      window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+    };
+
+    if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); go(); });
+    if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
+    if (icon)  icon.addEventListener("click", go);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const sidenavs = document.querySelectorAll(".sidenav");
+    if (window.M && M.Sidenav) M.Sidenav.init(sidenavs);
   });
 
+  wireSearchBar();
   render();
 })();

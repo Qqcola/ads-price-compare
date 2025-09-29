@@ -4,52 +4,67 @@
   <meta charset="UTF-8" />
   <title>ADS – My List</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
   <link rel="stylesheet" href="/css/styles.css" />
+
   <style>
-    .list-card { display:flex; gap:14px; align-items:flex-start; padding:12px; }
-    .list-card img { width:80px; height:80px; object-fit:contain; background:#fff; border:1px solid #eee; border-radius:8px; }
-    .list-main { flex:1; min-width:0; }
-    .list-title { font-weight:700; font-size:1rem; margin:0 0 6px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
-    .list-meta { font-size:.9rem; color:#546e7a; margin-bottom:6px; }
-
-    /* NEW: retailer list inside My List items */
-    .retailer-list { display:flex; flex-direction:column; gap:6px; margin:6px 0 0; }
-    .retailer-row { display:grid; grid-template-columns: 1fr auto auto; gap:10px; align-items:center; font-size:.9rem; }
-    .retailer-view { font-size:.8rem; }
-    .retailer-muted { color:#78909c; }
-
-    .note-row { display:flex; gap:10px; align-items:center; margin-top:10px; }
-    .note-row input[type="text"] { flex:1; }
+    /* Simple styling for the on-page search (matches other pages) */
+    .page-search .input-field { margin: 0; }
+    .page-search input { font-size: 16px; }
+    .page-search .material-icons { line-height: 48px; }
+    /* Retailer rows inside list items */
+    .retailer-row {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+      font-size: 0.9rem;
+    }
+    .retailer-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .retailer-view { font-size: 0.85rem; }
   </style>
 </head>
 <body class="ads-bg">
-  <nav class="white z-depth-0">
+  <nav class="white z-depth-0" role="navigation">
     <div class="nav-wrapper container">
       <a href="/" class="brand-logo" style="color:#111;">
         <span class="brand-badge" style="background:#111;color:#fff;border-radius:6px;padding:2px 6px;margin-right:6px;">ADS</span>
-        My List
+        Australian Dietary Supplements
       </a>
       <ul class="right hide-on-med-and-down">
         <li><a href="/" class="ads-link">Home</a></li>
-        <!-- Search link intentionally removed -->
+        <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
       </ul>
     </div>
   </nav>
 
   <main class="section">
     <div class="container">
-      <div class="row" style="margin-bottom:10px;">
-        <div class="col s12">
-          <h6 style="font-weight:700;">Saved items <span id="count" class="grey-text"></span></h6>
+
+      <!-- On-page search card (ONLY addition) -->
+      <div class="card white" style="margin-bottom:16px;">
+        <div class="card-content">
+          <form id="page-search-form" class="page-search" role="search" aria-label="Search">
+            <div class="input-field" style="display:flex;align-items:center;">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;margin-right:6px;">search</i>
+              <input id="page-search-input" type="text" placeholder="Search supplements, brands, retailers…" autocomplete="off" />
+            </div>
+          </form>
         </div>
       </div>
 
-      <ul class="collection" id="list"></ul>
+      <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <h6 style="font-weight:700;margin:0;">My List</h6>
+        <a id="clear-all" class="btn-flat waves-effect"><i class="material-icons left">delete_sweep</i>Clear all</a>
+      </div>
 
-      <div class="section">
-        <a id="clear-all" class="btn red lighten-1"><i class="material-icons left">delete_forever</i>Clear All</a>
+      <!-- ORIGINAL list-style layout (no cards) -->
+      <ul class="collection" id="list-collection"></ul>
+
+      <!-- Empty state (no links, per your request) -->
+      <div id="empty-state" class="card white" style="display:none;">
+        <div class="card-content">
+          <p class="ads-muted" style="margin:0;">No saved items yet.</p>
+        </div>
       </div>
     </div>
   </main>
