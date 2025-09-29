@@ -30,6 +30,10 @@
     .pagination { user-select: none; }
     .pagination .waves-effect a { color: #3949ab; }
     .pagination li.active a { background-color: #3949ab; }
+    /* Simple styling for the on-page search bar */
+    .page-search .input-field { margin: 0; }
+    .page-search input { font-size: 16px; }
+    .page-search .material-icons { line-height: 48px; }
   </style>
 </head>
 
@@ -49,6 +53,18 @@
 
   <main class="section">
     <div class="container">
+      <!-- Compact search bar on the page (keeps grid CSS untouched) -->
+      <div class="card white" style="margin-bottom:16px;">
+        <div class="card-content">
+          <form id="page-search-form" class="page-search" role="search" aria-label="Search">
+            <div class="input-field" style="display:flex;align-items:center;">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;margin-right:6px;">search</i>
+              <input id="page-search-input" type="text" placeholder="Search supplements, brands, retailers…" autocomplete="off" />
+            </div>
+          </form>
+        </div>
+      </div>
+
       <h6 id="results-title" style="font-weight:700;">Results</h6>
       <div id="results-grid" class="row"></div>
 

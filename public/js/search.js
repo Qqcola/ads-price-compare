@@ -1,4 +1,4 @@
-// public/js/search.js — search + pagination + "Save" + de-duplication (no per-card My List link)
+// public/js/search.js — search + pagination + "Save" + strong de-duplication
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -57,44 +57,69 @@
     return rows;
   }
 
-  // ---------- de-duplicate + stable sort ----------
-  function norm(s) { return (s || "").toString().trim().toLowerCase().replace(/\s+/g, " "); }
-  function keyFor(doc) { return doc && doc._id ? `id:${String(doc._id)}` : `k:${norm(doc?.name || doc?.title)}|${norm(doc?.img_url)}`; }
-  function cheapestPrice(doc) {
+  // ---------- STRONGER DE-DUPLICATION ----------
+  const norm = (s) => (s || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+
+  const canonImg = (u) => {
+    if (!u) return "";
+    try {
+      const url = new URL(u);
+      return `${url.hostname.replace(/^www\./, "").toLowerCase()}${url.pathname.toLowerCase()}`;
+    } catch {
+      return (u.split("?")[0] || "").toLowerCase();
+    }
+  };
+
+  // Primary key is (normalized name/title + canonical image path)
+  const keyFor = (doc) => `k:${norm(doc?.name || doc?.title)}|${canonImg(doc?.img_url)}`;
+
+  const mergeObjects = (a = {}, b = {}) => {
+    const out = { ...a };
+    for (const [k, v] of Object.entries(b || {})) {
+      if (out[k] == null && v != null) out[k] = v;
+    }
+    return out;
+  };
+
+  const cheapestPrice = (doc) => {
     const nums = Object.values(doc?.price || {}).map(toNumber).filter(Number.isFinite);
     return nums.length ? Math.min(...nums) : Infinity;
-  }
-  function mergeObjects(a = {}, b = {}) { const out = { ...a }; for (const [k, v] of Object.entries(b)) if (out[k] == null && v != null) out[k] = v; return out; }
+  };
+
   function dedupeProducts(list) {
     const map = new Map();
     for (const p of list || []) {
       const k = keyFor(p);
-      if (!map.has(k)) map.set(k, { ...p });
-      else {
+      if (!map.has(k)) {
+        map.set(k, { ...p });
+      } else {
         const cur = map.get(k);
         cur.price = mergeObjects(cur.price, p.price);
-        cur.url   = mergeObjects(cur.url, p.url);
-        if (toNumber(p.count_reviews) > toNumber(cur.count_reviews)) {
-          cur.count_reviews = toNumber(p.count_reviews);
+        cur.url   = mergeObjects(cur.url,   p.url);
+        const pCount = toNumber(p.count_reviews);
+        const cCount = toNumber(cur.count_reviews);
+        if ((pCount || 0) > (cCount || 0)) {
+          cur.count_reviews = pCount;
           cur.avg_reviews = toNumber(p.avg_reviews) ?? cur.avg_reviews ?? null;
         }
         map.set(k, cur);
       }
     }
-    const deduped = Array.from(map.values());
-    deduped.sort((a, b) => {
+    const out = Array.from(map.values());
+    out.sort((a, b) => {
       const pa = cheapestPrice(a), pb = cheapestPrice(b);
       if (pa !== pb) return pa - pb;
-      const na = norm(a.name || a.title), nb = norm(b.name || b.title);
-      return na.localeCompare(nb);
+      return norm(a.name || a.title).localeCompare(norm(b.name || b.title));
     });
-    return deduped;
+    return out;
   }
 
+  // ---------- card ----------
   function card(doc, idx) {
     const fullName = doc.name || doc.title || "Unnamed product";
     const name     = truncateTitle(fullName);
-    const imgUrl   = getImageUrl(doc);
+    theImg = getImageUrl(doc);
+    const imgUrl   = theImg;
     const rating   = toNumber(doc.avg_reviews);
     const reviews  = toNumber(doc.count_reviews);
     const retailersAll = extractRetailers(doc);
@@ -206,10 +231,30 @@
         const idx = Number(el.dataset.idx);
         const doc = CURRENT_SLICE[idx];
         if (!doc || !window.ADSFav) return;
+        // Save with canonical de-duplication in favs.js
         ADSFav.upsert(doc);
         if (window.M && M.toast) M.toast({ html: "Saved to My List" });
       });
     });
+  }
+
+  // ---------- on-page search bar wiring (doesn't affect grid) ----------
+  function wireSearchBar(qInitial) {
+    const form  = $("#page-search-form");
+    const input = $("#page-search-input");
+    const icon  = $("#page-search-go");
+
+    if (input && qInitial) input.value = qInitial;
+
+    const go = () => {
+      const q = input?.value?.trim();
+      if (!q) return;
+      window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+    };
+
+    if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); go(); });
+    if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
+    if (icon)  icon.addEventListener("click", go);
   }
 
   // ---------- fetch + boot ----------
@@ -217,6 +262,8 @@
     const q = getParam("q").trim();
     document.title = q ? `Search – ${q} | ADS` : "Search | ADS";
     if (titleEl) titleEl.textContent = q ? `Results for: ${q}` : "Results";
+
+    wireSearchBar(q); // <-- only addition
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);

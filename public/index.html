@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
   <link rel="stylesheet" href="/css/styles.css" />
 
-  <!-- === HARD OVERRIDE: force 4-per-row grid + equal-height cards + softer fonts === -->
+  <!-- === HARD OVERRIDE: force 4-per-row grid + equal-height cards === -->
   <style id="grid-fix">
     /* 4-up grid (3/2/1 responsive) */
     #trending-grid.row,
@@ -64,12 +64,17 @@
     #trending-grid .retailer-row, #results-grid .retailer-row { display: grid !important; grid-template-columns: 1fr auto auto !important; gap: 10px !important; align-items: center !important; font-size: .85rem !important; }
     #trending-grid .retailer-view, #results-grid .retailer-view { font-size: .8rem !important; }
     #trending-grid .card .card-action, #results-grid .card .card-action { margin-top: auto !important; padding-top: 4px !important; border-top: 0 !important; }
+
+    /* Small styling for the on-page (card) search bar */
+    .page-search .input-field { margin: 0; }
+    .page-search input { font-size: 16px; }
+    .page-search .material-icons { line-height: 48px; }
   </style>
   <!-- === /HARD OVERRIDE === -->
 </head>
 <body class="ads-bg">
 
-  <!-- Top Nav -->
+  <!-- Top Nav (navbar search removed) -->
   <nav class="white z-depth-0 ads-nav" role="navigation" data-component="navbar">
     <div class="nav-wrapper container nav-flex">
       <a href="/" class="brand-logo ads-brand">
@@ -81,15 +86,6 @@
       <a href="#" data-target="mobile-nav" class="sidenav-trigger ads-icon">
         <i class="material-icons">menu</i>
       </a>
-
-      <!-- Inline search -->
-      <form class="nav-search hide-on-small-only" role="search" aria-label="Product search" id="home-search-form">
-        <div class="input-field">
-          <i class="material-icons prefix ads-icon" id="home-search-go" style="cursor:pointer">search</i>
-          <input id="search-input" class="ads-input" type="text"
-                 placeholder="Search supplements, brands, retailers…" autocomplete="off">
-        </div>
-      </form>
 
       <!-- Right menu -->
       <ul class="right hide-on-med-and-down nav-links">
@@ -109,13 +105,13 @@
     <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
   </ul>
 
-  <!-- Hero -->
+  <!-- Hero (helper line removed) -->
   <header id="home" class="section ads-hero">
     <div class="container">
       <div class="row valign-wrapper">
         <div class="col s12 m7">
           <h3 class="ads-title">Find the best price on popular supplements!</h3>
-          <p class="ads-muted">Type a query and hit Enter to view all matching products.</p>
+          <!-- Removed: helper sentence under the heading -->
         </div>
         <div class="col s12 m5">
           <div class="card white ads-card">
@@ -128,6 +124,22 @@
       </div>
     </div>
   </header>
+
+  <!-- On-page search card -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="card white" style="margin-bottom:16px;">
+        <div class="card-content">
+          <form id="page-search-form" class="page-search" role="search" aria-label="Search">
+            <div class="input-field" style="display:flex;align-items:center;">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;margin-right:6px;">search</i>
+              <input id="page-search-input" type="text" placeholder="Search supplements, brands, retailers…" autocomplete="off" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Trending -->
   <section id="trending" class="section ads-section-gradient-pink">
@@ -173,7 +185,7 @@
     </div>
   </footer>
 
-  <!-- Load scripts: Materialize → Favs helper → Page JS -->
+  <!-- Load scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="/js/favs.js"></script>
   <script src="/js/app.js"></script>

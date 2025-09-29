@@ -1,4 +1,4 @@
-// public/js/app.js — trending with "Save" to My List (no per-card My List link)
+// public/js/app.js — trending with "Save" and strong de-duplication
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -8,6 +8,7 @@
   const PLACEHOLDER_IMG = "/images/placeholder.png";
   const isNum = (x) => Number.isFinite(x);
 
+  // ---------- helpers ----------
   const toNumber = (v) => {
     if (v == null) return null;
     if (typeof v === "number") return Number.isFinite(v) ? v : null;
@@ -21,18 +22,22 @@
   };
   const titleizeKey = (k) => String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const getImageUrl = (doc) => (/^https?:\/\//i.test(doc?.img_url || "")) ? doc.img_url : PLACEHOLDER_IMG;
+
   const truncateTitle = (s, max = TITLE_MAX_CHARS) => {
     s = (s || "").trim(); if (s.length <= max) return s;
-    const clipped = s.slice(0, max + 1), lastSpace = clipped.lastIndexOf(" ");
+    const clipped = s.slice(0, max + 1);
+    const lastSpace = clipped.lastIndexOf(" ");
     const base = lastSpace > 40 ? clipped.slice(0, lastSpace) : s.slice(0, max);
     return `${base}…`;
   };
+
   const renderStars = (r) => {
     const n = toNumber(r); if (!isNum(n)) return "";
     const v = Math.max(0, Math.min(5, n)), full = Math.floor(v);
     return `<span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(5-full)}</span>
             <span class="ads-muted" style="margin-left:6px">${v.toFixed(1)}</span>`;
   };
+
   function extractRetailers(doc) {
     const priceObj = (doc && typeof doc.price === "object") ? doc.price : {};
     const urlObj   = (doc && typeof doc.url   === "object") ? doc.url   : {};
@@ -45,6 +50,42 @@
     }
     rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
     return rows;
+  }
+
+  // ---------- STRONGER DE-DUPLICATION ----------
+  const norm = (s) => (s || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
+  const canonImg = (u) => {
+    if (!u) return "";
+    try { const url = new URL(u); return `${url.hostname.replace(/^www\./, "").toLowerCase()}${url.pathname.toLowerCase()}`; }
+    catch { return (u.split("?")[0] || "").toLowerCase(); }
+  };
+  const keyFor = (doc) => `k:${norm(doc?.name || doc?.title)}|${canonImg(doc?.img_url)}`;
+  const mergeObjects = (a = {}, b = {}) => { const out = { ...a }; for (const [k, v] of Object.entries(b || {})) if (out[k] == null && v != null) out[k] = v; return out; };
+  const cheapestPrice = (doc) => { const nums = Object.values(doc?.price || {}).map(toNumber).filter(Number.isFinite); return nums.length ? Math.min(...nums) : Infinity; };
+  function dedupeProducts(list) {
+    const map = new Map();
+    for (const p of list || []) {
+      const k = keyFor(p);
+      if (!map.has(k)) map.set(k, { ...p });
+      else {
+        const cur = map.get(k);
+        cur.price = mergeObjects(cur.price, p.price);
+        cur.url   = mergeObjects(cur.url,   p.url);
+        const pCount = toNumber(p.count_reviews), cCount = toNumber(cur.count_reviews);
+        if ((pCount || 0) > (cCount || 0)) {
+          cur.count_reviews = pCount;
+          cur.avg_reviews = toNumber(p.avg_reviews) ?? cur.avg_reviews ?? null;
+        }
+        map.set(k, cur);
+      }
+    }
+    const out = Array.from(map.values());
+    out.sort((a, b) => {
+      const pa = cheapestPrice(a), pb = cheapestPrice(b);
+      if (pa !== pb) return pa - pb;
+      return norm(a.name || a.title).localeCompare(norm(b.name || b.title));
+    });
+    return out;
   }
 
   function card(doc, idx) {
@@ -99,10 +140,14 @@
   async function loadTrending() {
     try {
       const r = await fetch("/api/trending");
-      LAST = r.ok ? await r.json() : [];
+      const docs = r.ok ? await r.json() : [];
+      LAST = dedupeProducts(docs);
       trendingGrid.innerHTML = LAST.map((d, i) => card(d, i)).join("");
       wireFavs();
-    } catch (e) { console.error(e); trendingGrid.innerHTML = ""; }
+    } catch (e) {
+      console.error(e);
+      trendingGrid.innerHTML = "";
+    }
   }
 
   function wireFavs() {
@@ -118,9 +163,16 @@
     });
   }
 
-  // Search box behaviour (unchanged)
-  const input = $("#search-input"), form = $("#home-search-form"), icon = $("#home-search-go");
-  function goSearch() { const q = input?.value?.trim(); if (!q) return; window.location.href = `/search.html?q=${encodeURIComponent(q)}`; }
+  // Search box behaviour: prefer on-page search (#page-*) then fall back to old navbar IDs
+  const form  = $("#page-search-form")  || $("#home-search-form");
+  const input = $("#page-search-input") || $("#search-input");
+  const icon  = $("#page-search-go")    || $("#home-search-go");
+
+  function goSearch() {
+    const q = input?.value?.trim();
+    if (!q) return;
+    window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+  }
   if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); goSearch(); });
   if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); goSearch(); } });
   if (icon)  icon.addEventListener("click", goSearch);
