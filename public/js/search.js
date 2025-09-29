@@ -59,7 +59,6 @@
 
   // ---------- STRONGER DE-DUPLICATION ----------
   const norm = (s) => (s || "").toString().trim().toLowerCase().replace(/\s+/g, " ");
-
   const canonImg = (u) => {
     if (!u) return "";
     try {
@@ -69,8 +68,6 @@
       return (u.split("?")[0] || "").toLowerCase();
     }
   };
-
-  // Primary key is (normalized name/title + canonical image path)
   const keyFor = (doc) => `k:${norm(doc?.name || doc?.title)}|${canonImg(doc?.img_url)}`;
 
   const mergeObjects = (a = {}, b = {}) => {
@@ -114,23 +111,30 @@
     return out;
   }
 
+  // Prefer scraped id; fallback to _id / it_id
+  const detailsIdOf = (doc) => (doc?.id ?? doc?._id ?? doc?.it_id ?? "").toString();
+  const detailsHrefOf = (doc) => {
+    const id = detailsIdOf(doc);
+    return id ? `/item?id=${encodeURIComponent(id)}` : "#!";
+  };
+
   // ---------- card ----------
   function card(doc, idx) {
     const fullName = doc.name || doc.title || "Unnamed product";
     const name     = truncateTitle(fullName);
-    theImg = getImageUrl(doc);
-    const imgUrl   = theImg;
+    const imgUrl   = getImageUrl(doc);
     const rating   = toNumber(doc.avg_reviews);
     const reviews  = toNumber(doc.count_reviews);
     const retailersAll = extractRetailers(doc);
     const retailers    = retailersAll.slice(0, MAX_RETAILERS_PER_CARD);
     const moreCount    = Math.max(0, retailersAll.length - retailers.length);
+    const detailsHref  = detailsHrefOf(doc);
 
     const retailersHtml = retailers.length
       ? `<div class="retailer-list">
           ${retailers.map((r) => {
               const priceText = r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>";
-              const link      = r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">VIEW</a>` : "";
+              const link      = r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">PURCHASE</a>` : "";
               return `<div class="retailer-row">
                         <span class="retailer-name">${r.name}</span>
                         <span class="retailer-price">${priceText}</span>
@@ -148,15 +152,20 @@
     return `
       <div class="col s12 m6 l3">
         <div class="card white hoverable">
-          <div class="card-image"><img src="${imgUrl}" alt="${fullName}" title="${fullName}" loading="lazy" referrerpolicy="no-referrer"></div>
+          <a class="card-image" href="${detailsHref}" aria-label="View details">
+            <img src="${imgUrl}" alt="${fullName}" title="${fullName}" loading="lazy" referrerpolicy="no-referrer">
+          </a>
           <div class="card-content">
-            <span class="card-title" title="${fullName}">${name}</span>
+            <a class="card-title" title="${fullName}" href="${detailsHref}">${name}</a>
             <div class="rating-wrap">${isNum(rating) ? renderStars(rating) : ""}</div>
             ${reviewsHtml}
             ${retailersHtml}
           </div>
-          <div class="card-action">
-            <a href="#!" class="fav-add" data-idx="${idx}"><i class="material-icons left">favorite</i>Save</a>
+          <div class="card-action" style="display:flex;justify-content:space-between;align-items:center;">
+            <a href="${detailsHref}" class="ads-action-link">VIEW DETAILS</a>
+            <a href="#!" class="fav-add ads-action-link" data-idx="${idx}">
+              <i class="material-icons left">favorite</i>Save
+            </a>
           </div>
         </div>
       </div>`;
@@ -231,14 +240,13 @@
         const idx = Number(el.dataset.idx);
         const doc = CURRENT_SLICE[idx];
         if (!doc || !window.ADSFav) return;
-        // Save with canonical de-duplication in favs.js
         ADSFav.upsert(doc);
         if (window.M && M.toast) M.toast({ html: "Saved to My List" });
       });
     });
   }
 
-  // ---------- on-page search bar wiring (doesn't affect grid) ----------
+  // ---------- on-page search bar wiring ----------
   function wireSearchBar(qInitial) {
     const form  = $("#page-search-form");
     const input = $("#page-search-input");
@@ -263,7 +271,7 @@
     document.title = q ? `Search – ${q} | ADS` : "Search | ADS";
     if (titleEl) titleEl.textContent = q ? `Results for: ${q}` : "Results";
 
-    wireSearchBar(q); // <-- only addition
+    wireSearchBar(q);
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);

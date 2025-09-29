@@ -62,11 +62,12 @@
   const keyFor = (doc) => `k:${norm(doc?.name || doc?.title)}|${canonImg(doc?.img_url)}`;
   const mergeObjects = (a = {}, b = {}) => { const out = { ...a }; for (const [k, v] of Object.entries(b || {})) if (out[k] == null && v != null) out[k] = v; return out; };
   const cheapestPrice = (doc) => { const nums = Object.values(doc?.price || {}).map(toNumber).filter(Number.isFinite); return nums.length ? Math.min(...nums) : Infinity; };
+
   function dedupeProducts(list) {
     const map = new Map();
     for (const p of list || []) {
       const k = keyFor(p);
-      if (!map.has(k)) map.set(k, { ...p });
+      if (!map.has(k)) map.set(k, { ...p });            // keep original fields, incl. id/_id
       else {
         const cur = map.get(k);
         cur.price = mergeObjects(cur.price, p.price);
@@ -74,9 +75,8 @@
         const pCount = toNumber(p.count_reviews), cCount = toNumber(cur.count_reviews);
         if ((pCount || 0) > (cCount || 0)) {
           cur.count_reviews = pCount;
-          cur.avg_reviews = toNumber(p.avg_reviews) ?? cur.avg_reviews ?? null;
+          cur.avg_reviews   = toNumber(p.avg_reviews) ?? cur.avg_reviews ?? null;
         }
-        map.set(k, cur);
       }
     }
     const out = Array.from(map.values());
@@ -98,11 +98,15 @@
     const retailers    = retailersAll.slice(0, MAX_RETAILERS_PER_CARD);
     const moreCount    = Math.max(0, retailersAll.length - retailers.length);
 
+    // Prefer scraped numeric id; fallback to Mongo _id if missing.
+    const rawId = (doc.id ?? doc._id ?? "").toString();
+    const detailsHref = rawId ? `/item?id=${encodeURIComponent(rawId)}` : "#!";
+
     const retailersHtml = retailers.length
       ? `<div class="retailer-list">
           ${retailers.map((r) => {
               const priceText = r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>";
-              const link      = r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">VIEW</a>` : "";
+              const link      = r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">PURCHASE</a>` : "";
               return `<div class="retailer-row">
                         <span class="retailer-name">${r.name}</span>
                         <span class="retailer-price">${priceText}</span>
@@ -120,14 +124,17 @@
     return `
       <div class="col s12 m6 l3">
         <div class="card white hoverable">
-          <div class="card-image"><img src="${imgUrl}" alt="${fullName}" title="${fullName}" loading="lazy" referrerpolicy="no-referrer"></div>
+          <a class="card-image" href="${detailsHref}" aria-label="View details">
+            <img src="${imgUrl}" alt="${fullName}" title="${fullName}" loading="lazy" referrerpolicy="no-referrer">
+          </a>
           <div class="card-content">
-            <span class="card-title" title="${fullName}">${name}</span>
+            <a class="card-title" title="${fullName}" href="${detailsHref}">${name}</a>
             <div class="rating-wrap">${isNum(rating) ? renderStars(rating) : ""}</div>
             ${reviewsHtml}
             ${retailersHtml}
           </div>
-          <div class="card-action">
+          <div class="card-action" style="display:flex;justify-content:space-between;align-items:center;">
+            <a href="${detailsHref}" class="details-link">VIEW DETAILS</a>
             <a href="#!" class="fav-add" data-idx="${idx}"><i class="material-icons left">favorite</i>Save</a>
           </div>
         </div>
@@ -163,7 +170,7 @@
     });
   }
 
-  // Search box behaviour: prefer on-page search (#page-*) then fall back to old navbar IDs
+  // Search box behaviour (page search preferred)
   const form  = $("#page-search-form")  || $("#home-search-form");
   const input = $("#page-search-input") || $("#search-input");
   const icon  = $("#page-search-go")    || $("#home-search-go");
@@ -178,7 +185,6 @@
   if (icon)  icon.addEventListener("click", goSearch);
 
   const y = document.getElementById("year"); if (y) y.textContent = new Date().getFullYear();
-
   document.addEventListener("DOMContentLoaded", () => {
     Array.from(document.querySelectorAll(".sidenav")).forEach(el => window.M && M.Sidenav && M.Sidenav.init(el));
   });

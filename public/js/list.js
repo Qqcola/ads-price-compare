@@ -1,4 +1,4 @@
-// public/js/list.js — render saved items in a Materialize "collection" (no cards) + search bar
+// public/js/list.js — render saved items in a Materialize "collection" + search bar
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -48,6 +48,9 @@
   };
   const keyFor = (p) => `k:${norm(p?.name || p?.title)}|${canonImg(p?.img_url)}`;
 
+  // try to find an id suitable for /item?id=...
+  const getItemId = (doc) => doc?.it_id || doc?.id || doc?._id || "";
+
   // ---------- render ----------
   const listEl = $("#list-collection");
   const empty = $("#empty-state");
@@ -66,13 +69,14 @@
     const img = getImageUrl(doc);
     const rows = extractRetailers(doc);
     const reviews = toNumber(doc.count_reviews);
+    const idForDetails = getItemId(doc);
 
     const retailersHtml = rows.length
       ? rows.map(r => `
           <div class="retailer-row">
             <span class="retailer-name">${r.name}</span>
             <span class="retailer-price">${r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>"}</span>
-            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">VIEW</a>` : ""}
+            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">PURCHASE</a>` : ""}
           </div>
         `).join("")
       : `<p class="ads-muted" style="margin-top:6px">No retailer data.</p>`;
@@ -90,6 +94,11 @@
         <div class="retailer-list">
           ${retailersHtml}
         </div>
+
+        <div class="list-actions">
+          ${idForDetails ? `<a class="btn-flat ads-action-link" href="/item?id=${encodeURIComponent(idForDetails)}">VIEW DETAILS</a>` : ``}
+        </div>
+
         <a href="#!" class="secondary-content remove-item" data-idx="${idx}" title="Remove">
           <i class="material-icons">close</i>
         </a>

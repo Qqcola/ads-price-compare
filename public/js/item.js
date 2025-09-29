@@ -1,279 +1,242 @@
-function activateSwitchSimilarProduct() {
-  const track = document.getElementById("track");
-  const viewport = document.getElementById("viewport");
-  const btnL = document.querySelector(".btn-left");
-  const btnR = document.querySelector(".btn-right");
-  const visibleCountEl = document.getElementById("visibleCount");
+// public/js/item.js — item detail page
+(function () {
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  let index = 0; // index of the left-most visible card
+  const PLACEHOLDER_IMG = "/images/placeholder.png";
 
-  function getGap() {
-    return (
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--gap")
-      ) || 12
-    );
+  // ---------- helpers ----------
+  const toNumber = (v) => {
+    if (v == null) return null;
+    if (typeof v === "number") return Number.isFinite(v) ? v : null;
+    if (typeof v === "string") { const m = v.match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
+    return null;
+  };
+  const fmtCurrency = (v) => {
+    if (v == null || Number.isNaN(Number(v))) return "";
+    try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(v)); }
+    catch { return `$${Number(v).toFixed(2)}`; }
+  };
+  const titleizeKey = (k) => String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const getImageUrl = (doc) => (/^https?:\/\//i.test(doc?.img_url || "")) ? doc.img_url : PLACEHOLDER_IMG;
+
+  function extractRetailers(doc) {
+    const priceObj = (doc && typeof doc.price === "object") ? doc.price : {};
+    const urlObj   = (doc && typeof doc.url   === "object") ? doc.url   : {};
+    const keys = new Set([...Object.keys(priceObj || {}), ...Object.keys(urlObj || {})]);
+    const rows = [];
+    for (const key of keys) {
+      const price = toNumber(priceObj[key]);
+      const url   = typeof urlObj[key] === "string" ? urlObj[key] : "";
+      if (price != null || url) rows.push({ key, name: titleizeKey(key), price, url });
+    }
+    rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    return rows;
   }
 
-  function getVisible() {
-    // read CSS variable --visible (string) and parse to int
-    const v =
-      getComputedStyle(document.documentElement).getPropertyValue(
-        "--visible"
-      ) || "5";
-    return Math.max(1, parseInt(v));
-  }
-
-  function computeSizes() {
-    // ensure cards have width set via CSS; compute a single card width (including gap)
-    const firstCard = track.querySelector(".card");
-    if (!firstCard) return 0;
-    const gap = getGap();
-    const cardRect = firstCard.getBoundingClientRect();
-    const cardWidth = cardRect.width; // already computed via CSS percent rules
-    return { cardWidth, gap, visible: getVisible() };
-  }
-
-  function updateVisibleCount() {
-    visibleCountEl.textContent = getVisible();
-  }
-
-  function updateButtons() {
-    const visible = getVisible();
-    const total = track.children.length;
-    const maxIndex = Math.max(0, total - visible);
-    btnL.style.opacity = index <= 0 ? "0.35" : "1";
-    btnR.style.opacity = index >= maxIndex ? "0.35" : "1";
-  }
-
-  function slideToIndex(target) {
-    const total = track.children.length;
-    const visible = getVisible();
-    const gap = getGap();
-    const { cardWidth } = computeSizes();
-    const maxIndex = Math.max(0, total - visible);
-    index = Math.max(0, Math.min(target, maxIndex));
-    const offset = index * (cardWidth + gap);
-    // constrain offset not to exceed scrollable width
-    const maxOffset = Math.max(0, track.scrollWidth - viewport.clientWidth);
-    const finalOffset = Math.min(offset, maxOffset);
-    track.style.transform = `translateX(-${finalOffset}px)`;
-    updateButtons();
-  }
-
-  btnL.addEventListener("click", () => {
-    slideToIndex(index - 1);
-  });
-  btnR.addEventListener("click", () => {
-    slideToIndex(index + 1);
-  });
-
-  // expose population method
-  populateSimilar = function (items) {
-    track.innerHTML = "";
-    const totalItems = items && items.length ? Math.min(items.length, 15) : 15;
-    // console.log(similarItemList[0]['price']['chemist_warehouse']);  
-    const used = items.slice(0, totalItems);
-    used.forEach((it, idx) => {
-      const el = document.createElement("div");
-      el.className = "card";
-      const priceText = it.price.chemist_warehouse;
-      el.innerHTML = `
-            <img class="rect" src="">
-            <div class=\"name\">${escapeHtml(
-              it.name || "Sản phẩm " + (idx + 1)
-            )}</div>
-            <div class=\"price\">${priceText ? "$" + priceText : ""}</div>`;
-      track.appendChild(el);
-    });
-    // reset index and layout
-    index = 0;
-    // immediate recompute (no setTimeout)
-    updateVisibleCount();
-    requestAnimationFrame(() => {
-      slideToIndex(0);
-    });
+  const ratingStars = (avg) => {
+    const n = toNumber(avg);
+    if (!Number.isFinite(n)) return "";
+    const v = Math.max(0, Math.min(5, n));
+    const full = Math.floor(v);
+    return `<span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(5-full)}</span>
+            <span class="ads-muted" style="margin-left:6px">${v.toFixed(1)}</span>`;
   };
 
-  function escapeHtml(s) {
-    return String(s).replace(
-      /[&<>\"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        }[c])
-    );
-  }
+  // ---------- Similar products slider ----------
+  function activateSwitchSimilarProduct() {
+    const track = document.getElementById("track");
+    const viewport = document.getElementById("viewport");
+    const btnL = document.querySelector(".btn-left");
+    const btnR = document.querySelector(".btn-right");
 
-  // Recompute on resize (responsive). Using rAF to avoid layout thrash.
-  let resizeTimer = null;
-  function onResize() {
-    if (resizeTimer) cancelAnimationFrame(resizeTimer);
-    resizeTimer = requestAnimationFrame(() => {
-      // keep current index valid
+    let index = 0;
+
+    const getGap = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gap")) || 12;
+    const getVisible = () => Math.max(1, parseInt(getComputedStyle(document.documentElement).getPropertyValue("--visible") || "5"));
+
+    const computeSizes = () => {
+      const firstCard = track.querySelector(".card");
+      if (!firstCard) return { cardWidth: 0, gap: 0 };
+      const gap = getGap();
+      const cardRect = firstCard.getBoundingClientRect();
+      return { cardWidth: cardRect.width, gap, visible: getVisible() };
+    };
+
+    function updateButtons() {
+      const visible = getVisible();
+      const total = track.children.length;
+      const maxIndex = Math.max(0, total - visible);
+      btnL.style.opacity = index <= 0 ? "0.35" : "1";
+      btnR.style.opacity = index >= maxIndex ? "0.35" : "1";
+    }
+
+    function slideToIndex(target) {
       const total = track.children.length;
       const visible = getVisible();
+      const gap = getGap();
+      const { cardWidth } = computeSizes();
       const maxIndex = Math.max(0, total - visible);
-      if (index > maxIndex) index = maxIndex;
-      updateVisibleCount();
-      slideToIndex(index);
+      index = Math.max(0, Math.min(target, maxIndex));
+      const offset = index * (cardWidth + gap);
+      const maxOffset = Math.max(0, track.scrollWidth - viewport.clientWidth);
+      const finalOffset = Math.min(offset, maxOffset);
+      track.style.transform = `translateX(-${finalOffset}px)`;
+      updateButtons();
+    }
+
+    btnL.addEventListener("click", () => slideToIndex(index - 1));
+    btnR.addEventListener("click", () => slideToIndex(index + 1));
+
+    window.populateSimilar = function (items) {
+      track.innerHTML = "";
+      const used = (items || []).slice(0, 15);
+      used.forEach((it, idx) => {
+        const el = document.createElement("div");
+        el.className = "card";
+        const price = (extractRetailers(it)[0] || {}).price;
+        el.innerHTML = `
+          <img class="rect" src="${getImageUrl(it)}" referrerpolicy="no-referrer">
+          <a class="name" href="/item?id=${it._id || it.id}">${(it.name || `Product ${idx+1}`)}</a>
+          <div class="price">${price != null ? fmtCurrency(price) : ""}</div>`;
+        track.appendChild(el);
+      });
+      index = 0;
+      requestAnimationFrame(() => slideToIndex(0));
+    };
+
+    window.addEventListener("resize", () => requestAnimationFrame(() => slideToIndex(index)));
+  }
+
+  // ---------- Accordion ----------
+  function activateScrollInformation() {
+    const acc = document.getElementById("accordion");
+    acc.querySelectorAll(".item").forEach((item) => {
+      const head = item.querySelector(".head");
+      const content = item.querySelector(".content");
+      head.addEventListener("click", () => {
+        const isOpen = item.classList.contains("open");
+        if (isOpen) {
+          content.style.maxHeight = 0;
+          item.classList.remove("open");
+          head.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          item.classList.add("open");
+          content.style.maxHeight = content.scrollHeight + "px";
+          setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 180);
+        }
+      });
     });
   }
-  window.addEventListener("resize", onResize);
 
-  // init skeleton
-  populateSimilar(similarItemList);
-}
+  // ---------- Build accordion ----------
+  function createAndAppendDetailInformation(list) {
+    const acc = $("#accordion");
+    const html = (list || []).map((it) => `
+      <div class="item" data-key="${it.key}">
+        <div class="head">
+          <h3>${it.title}</h3>
+          <div class="chev">▾</div>
+        </div>
+        <div class="content"><p>${it.content || ""}</p></div>
+      </div>`).join("");
+    acc.innerHTML = html;
+  }
 
-function activateScrollInformation() {
-  const acc = document.getElementById("accordion");
-  acc.querySelectorAll(".item").forEach((item) => {
-    const head = item.querySelector(".head");
-    const content = item.querySelector(".content");
-    head.addEventListener("click", () => {
-      const isOpen = item.classList.contains("open");
-      if (isOpen) {
-        // close
-        content.style.maxHeight = 0;
-        item.classList.remove("open");
-        head.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else {
-        // open this one but do NOT close others
-        item.classList.add("open");
-        content.style.maxHeight = content.scrollHeight + "px";
-        setTimeout(
-          () => head.scrollIntoView({ behavior: "smooth", block: "start" }),
-          180
-        );
-      }
-    });
-  });
-}
-// --- Fetch item by ID and populate page ---
-let item = null;
-let similarItemList = null;
-const itemDetailInfor = document.getElementById("accordion");
+  // ---------- Fetch & render ----------
+  let ITEM = null;
+  let SIMILAR = null;
 
-async function fetchItembyID() {
-  const params = new URLSearchParams(window.location.search);
-  const itemId = (params.get("id") || "").trim();
-  try {
+  async function fetchItembyID() {
+    const params = new URLSearchParams(window.location.search);
+    const itemId = (params.get("id") || "").trim();
+    if (!itemId) return;
     const res = await fetch(`/api/itemById?id=${encodeURIComponent(itemId)}`);
-    if (!res.ok) throw new Error("Network response not ok");
+    if (!res.ok) return;
     const json = await res.json();
-    item = json["item"];
-    console.log(item);
-    similarItemList = json["similarItems"];
+    ITEM = json.item || null;
+    SIMILAR = json.similarItems || [];
     applyItemToDOM();
-  } catch (e) {
-    console.error(e);
   }
-}
 
-function getFirstPrice(priceObj) {
-  if (!priceObj) return "";
-  if (typeof priceObj === "number") return priceObj;
-  if (typeof priceObj === "string") return priceObj;
-  // Map-like object
-  const vals = Object.values(priceObj);
-  return vals.length ? vals[0] : "";
-}
+  function applyItemToDOM() {
+    if (!ITEM) return;
 
-function createAndAppendDetailInformation(data) {
-  const htmlStrings = data.map((item) => {
-    return `
-            <div class="item" data-key="${item.key}">
-                <div class="head">
-                    <h3>${item.title}</h3>
-                    <div class="chev">▾</div>
-                </div>
-                <div class="content">
-                    <p id="infoContent">
-                        ${item.content}
-                    </p>
-                </div>
-            </div>
-        `;
-  });
-  itemDetailInfor.innerHTML += htmlStrings.join("");
-}
+    // Basic fields
+    $("#mainImg").src = getImageUrl(ITEM);
+    $("#itemName").textContent = ITEM.name || ITEM.title || "";
 
-function applyItemToDOM() {
-  if (!item) return;
-  // name
-  const nameEl = document.getElementById("itemName");
-  if (nameEl) nameEl.textContent = item.name || "";
-  // id
-  const idEl = document.getElementById("itemId");
-  if (idEl) idEl.textContent = item.id ? "Product ID: " + item.id : "";
-  // image
-  const imgEl = document.getElementById("mainImg");
-  if (imgEl) imgEl.src = item.img_url || imgEl.src;
-  // price
-  const priceEl = document.getElementById("itemPrice");
-  const priceOldEl = document.getElementById("itemPriceOld");
-  const p = getFirstPrice(item.price.chemist_warehouse);
-  const pOld = getFirstPrice(item.price_old.chemist_warehouse);
-  if (priceEl)
-    priceEl.firstChild && priceEl.firstChild.nodeValue
-      ? (priceEl.firstChild.nodeValue = "$" + (p || ""))
-      : (priceEl.textContent = "$" + (p || ""));
-  if (priceOldEl) priceOldEl.textContent = pOld ? "$" + pOld + " Old" : "";
-  // reviews
-  const revEl = document.getElementById("itemReview");
-  if (revEl)
-    revEl.textContent =
-      (item.avg_reviews ? "⭐️ " + item.avg_reviews.toFixed(1) : "") +
-      (item.count_reviews ? " (" + item.count_reviews + ")" : "");
+    // Price (show min across retailers; NO old price)
+    const rows = extractRetailers(ITEM);
+    const min = rows.length ? rows[0].price : null;
+    $("#itemPrice").textContent = min != null ? fmtCurrency(min) : "";
 
-  // fill accordion fields if available (safe fallback)
-  const ids = {
-    general_information: "General Information",
-    ingredients: "Ingredients",
-    directions: "Directions",
-    warnings: "Warnings",
-  };
-  let dataSummarization = [];
-  for (let id in ids) {
-    if (!(id in item)) {
-      continue;
+    // Reviews summary
+    const rev = $("#itemReview");
+    const count = toNumber(ITEM.count_reviews);
+    rev.innerHTML = `${ratingStars(ITEM.avg_reviews)} ${Number.isFinite(count) ? `${count} reviews` : ""}`;
+
+    // Retailer rows
+    const list = $("#retailerList");
+    list.innerHTML = rows.length
+      ? rows.map(r => `
+          <div class="retailer-row">
+            <span class="retailer-name">${r.name}</span>
+            <span class="retailer-price">${r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>"}</span>
+            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">PURCHASE</a>` : ""}
+          </div>`).join("")
+      : `<p class="ads-muted" style="margin-top:6px">No retailer data.</p>`;
+
+    // Accordion
+    const sections = {
+      general_information: "General Information",
+      ingredients: "Ingredients",
+      directions: "Directions",
+      warnings: "Warnings",
+    };
+    const accData = Object.keys(sections)
+      .filter(k => ITEM[k])
+      .map(k => ({ key: k, title: sections[k], content: ITEM[k] }));
+    createAndAppendDetailInformation(accData);
+    activateScrollInformation();
+
+    // Similar
+    activateSwitchSimilarProduct();
+    populateSimilar(SIMILAR);
+
+    // Save button
+    const saveBtn = $("#save-btn");
+    if (saveBtn && window.ADSFav) {
+      saveBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        ADSFav.upsert(ITEM);
+        if (window.M && M.toast) M.toast({ html: "Saved to My List" });
+      });
     }
-    let dataDiv = { key: id, title: ids[id], content: item[id] };
-    dataSummarization.push(dataDiv);
   }
-  createAndAppendDetailInformation(dataSummarization);
-  activateScrollInformation();
-  activateSwitchSimilarProduct();
-}
 
-// auto-run fetch on page load
-window.addEventListener("DOMContentLoaded", () => {
-  // attempt to fetch; if API not available, it's fine — placeholders remain
-  fetchItembyID().catch((e) => console.warn(e));
-});
+  // ---------- search bar wiring (same as My List) ----------
+  function wireSearchBar() {
+    const form  = $("#page-search-form");
+    const input = $("#page-search-input");
+    const icon  = $("#page-search-go");
+    const go = () => {
+      const q = input?.value?.trim();
+      if (!q) return;
+      window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+    };
+    if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); go(); });
+    if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
+    if (icon)  icon.addEventListener("click", go);
+  }
 
-const input = $("#search-input");
-const form = $("#home-search-form");
-const icon = $("#home-search-go");
-function goSearch() {
-  const q = input?.value?.trim();
-  if (!q) return;
-  window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
-}
-if (form)
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    goSearch();
+  document.addEventListener("DOMContentLoaded", () => {
+    // sidenav if present
+    const sidenavs = document.querySelectorAll(".sidenav");
+    if (window.M && M.Sidenav) M.Sidenav.init(sidenavs);
+
+    wireSearchBar();
+    fetchItembyID().catch(()=>{});
   });
-if (input)
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      goSearch();
-    }
-  });
-if (icon) icon.addEventListener("click", goSearch);
+})();

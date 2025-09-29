@@ -30,7 +30,6 @@
     .pagination { user-select: none; }
     .pagination .waves-effect a { color: #3949ab; }
     .pagination li.active a { background-color: #3949ab; }
-    /* Simple styling for the on-page search bar */
     .page-search .input-field { margin: 0; }
     .page-search input { font-size: 16px; }
     .page-search .material-icons { line-height: 48px; }
@@ -38,13 +37,13 @@
 </head>
 
 <body class="ads-bg">
-  <nav class="white z-depth-0" role="navigation">
-    <div class="nav-wrapper container">
-      <a href="/" class="brand-logo" style="color:#111;">
-        <span class="brand-badge" style="background:#111;color:#fff;border-radius:6px;padding:2px 6px;margin-right:6px;">ADS</span>
-        Australian Dietary Supplements
+  <nav class="white z-depth-0 ads-nav" role="navigation">
+    <div class="nav-wrapper container nav-flex">
+      <a href="/" class="brand-logo ads-brand">
+        <span class="brand-badge">ADS</span>
+        <span class="brand-text">Australian Dietary Supplements</span>
       </a>
-      <ul class="right hide-on-med-and-down">
+      <ul class="right hide-on-med-and-down nav-links">
         <li><a href="/" class="ads-link">Home</a></li>
         <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
       </ul>
@@ -53,17 +52,20 @@
 
   <main class="section">
     <div class="container">
-      <!-- Compact search bar on the page (keeps grid CSS untouched) -->
+      <!-- Compact search bar on the page -->
       <div class="card white" style="margin-bottom:16px;">
         <div class="card-content">
           <form id="page-search-form" class="page-search" role="search" aria-label="Search">
-            <div class="input-field" style="display:flex;align-items:center;">
-              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;margin-right:6px;">search</i>
-              <input id="page-search-input" type="text" placeholder="Search supplements, brands, retailers…" autocomplete="off" />
+            <div class="input-field">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;">search</i>
+              <input id="page-search-input" type="text" 
+                    placeholder="Search supplements, brands, retailers…" 
+                    autocomplete="off" />
             </div>
           </form>
         </div>
       </div>
+
 
       <h6 id="results-title" style="font-weight:700;">Results</h6>
       <div id="results-grid" class="row"></div>
@@ -75,7 +77,6 @@
     </div>
   </main>
 
-  <!-- Load scripts: Materialize → Favs helper → Page JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="/js/favs.js"></script>
   <script src="/js/search.js"></script>
