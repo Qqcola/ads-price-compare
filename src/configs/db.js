@@ -18,7 +18,7 @@ mongoose.connect(mongoUri, {
 });
 
 mongoose.connection.on('connected', () => {
-    console.log('Connected to MongoDB');
+    console.log('✅ Connected to MongoDB');
 });
 
 module.exports = mongoose;

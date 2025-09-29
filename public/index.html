@@ -1,181 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>ADS – Australian Dietary Supplements</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ADS • Home</title>
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 
-  <!-- === HARD OVERRIDE: force 4-per-row grid + equal-height cards + softer fonts === -->
-  <style id="grid-fix">
-    /* 4-up grid (3/2/1 responsive) */
-    #trending-grid.row,
-    #results-grid.row {
-      display: grid !important;
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-      gap: 20px !important;
-    }
-    @media (max-width: 1200px) { #trending-grid.row, #results-grid.row { grid-template-columns: repeat(3, minmax(0,1fr)) !important; } }
-    @media (max-width: 900px)  { #trending-grid.row, #results-grid.row { grid-template-columns: repeat(2, minmax(0,1fr)) !important; } }
-    @media (max-width: 600px)  { #trending-grid.row, #results-grid.row { grid-template-columns: 1fr !important; } }
-
-    /* Neutralize Materialize floats/paddings inside these grids */
-    #trending-grid.row > .col,
-    #results-grid.row > .col {
-      float: none !important; width: auto !important; margin: 0 !important; padding: 0 !important;
-    }
-
-    /* Equal-height card shell */
-    #trending-grid .card,
-    #results-grid  .card {
-      display: flex !important; flex-direction: column !important;
-      height: 520px !important; border-radius: 12px !important; overflow: hidden !important;
-    }
-
-    /* Fixed image box */
-    #trending-grid .card .card-image,
-    #results-grid  .card .card-image {
-      height: 220px !important; display: flex !important; align-items: center !important; justify-content: center !important;
-      background: #fff !important; overflow: hidden !important; border-radius: 12px 12px 0 0 !important;
-    }
-    #trending-grid .card .card-image img,
-    #results-grid  .card .card-image img {
-      width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important;
-    }
-
-    /* Content + fonts */
-    #trending-grid .card .card-content,
-    #results-grid  .card .card-content { flex: 1 !important; display: flex !important; flex-direction: column !important; gap: 6px !important; }
-    #trending-grid .card .card-title,
-    #results-grid  .card .card-title {
-      display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important;
-      overflow: hidden !important; text-overflow: ellipsis !important;
-      font-size: .95rem !important; line-height: 1.2rem !important;
-      min-height: calc(1.2rem * 2) !important; max-height: calc(1.2rem * 2) !important; margin-bottom: 6px !important;
-    }
-    #trending-grid .rating-wrap, #trending-grid .reviews-line,
-    #results-grid  .rating-wrap, #results-grid  .reviews-line { min-height: 18px !important; font-size: .85rem !important; }
-    #trending-grid .retailer-list, #results-grid .retailer-list {
-      max-height: 72px !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; gap: 6px !important; margin-top: 6px !important;
-    }
-    #trending-grid .retailer-row, #results-grid .retailer-row { display: grid !important; grid-template-columns: 1fr auto auto !important; gap: 10px !important; align-items: center !important; font-size: .85rem !important; }
-    #trending-grid .retailer-view, #results-grid .retailer-view { font-size: .8rem !important; }
-    #trending-grid .card .card-action, #results-grid .card .card-action { margin-top: auto !important; padding-top: 4px !important; border-top: 0 !important; }
-  </style>
-  <!-- === /HARD OVERRIDE === -->
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="css/login_signup.css"/>
 </head>
-<body class="ads-bg">
+<body class="home">
+  <!-- Background (home-only image via CSS) -->
+  <div class="bg-container"></div>
+  <div class="bg-overlay"></div>
 
-  <!-- Top Nav -->
-  <nav class="white z-depth-0 ads-nav" role="navigation" data-component="navbar">
-    <div class="nav-wrapper container nav-flex">
-      <a href="/" class="brand-logo ads-brand">
-        <span class="brand-badge">ADS</span>
-        <span class="brand-text">Australian Dietary Supplements</span>
-      </a>
-
-      <!-- Mobile menu -->
-      <a href="#" data-target="mobile-nav" class="sidenav-trigger ads-icon">
-        <i class="material-icons">menu</i>
-      </a>
-
-      <!-- Inline search -->
-      <form class="nav-search hide-on-small-only" role="search" aria-label="Product search" id="home-search-form">
-        <div class="input-field">
-          <i class="material-icons prefix ads-icon" id="home-search-go" style="cursor:pointer">search</i>
-          <input id="search-input" class="ads-input" type="text"
-                 placeholder="Search supplements, brands, retailers…" autocomplete="off">
-        </div>
-      </form>
-
-      <!-- Right menu -->
-      <ul class="right hide-on-med-and-down nav-links">
-        <li><a href="/" class="ads-link">Home</a></li>
-        <li><a href="#tips" class="ads-link">Tips</a></li>
-        <li><a href="/chat" class="ads-link">Chatbot</a></li>
-        <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+  <!-- Topbar -->
+  <nav class="topbar transparent z-depth-0">
+    <div class="container topbar-inner">
+      <span></span>
+      <ul class="actions">
+        <li><a class="btn-pill btn-ghost" href="login.html">Sign In</a></li>
+        <li><a class="btn-pill btn-ghost" href="signup.html">Sign Up</a></li>
       </ul>
     </div>
   </nav>
 
-  <!-- Mobile Nav -->
-  <ul class="sidenav" id="mobile-nav">
-    <li><a href="/" class="ads-link">Home</a></li>
-    <li><a href="#tips" class="ads-link">Tips</a></li>
-    <li><a href="/chat" class="ads-link">Chatbot</a></li>
-    <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
-  </ul>
+  <!-- MAIN -->
+  <main class="home-main">
+    <!-- 1) OUTSIDE THE CONTAINER: Title + Typing animation (white text) -->
+    <section class="hero-intro animate-fade-up">
+      <h1 class="title title-white">Welcome to Australian Dietary Supplements (ADS)</h1>
 
-  <!-- Hero -->
-  <header id="home" class="section ads-hero">
-    <div class="container">
-      <div class="row valign-wrapper">
-        <div class="col s12 m7">
-          <h3 class="ads-title">Find the best price on popular supplements!</h3>
-          <p class="ads-muted">Type a query and hit Enter to view all matching products.</p>
+      <p class="subtitle subtitle-white hero-sub fixed-line">
+        <span id="rotator">
+          <span id="rotator-text"></span><span class="cursor">|</span>
+        </span>
+      </p>
+    </section>
+
+    <!-- 2) INSIDE THE CONTAINER: About ADS only -->
+    <section class="about-box animate-fade-up delay-1">
+      <h2>About ADS</h2>
+      <p><strong>Australian Dietary Supplements (ADS)</strong> helps you make informed choices about vitamins, supplements, and over-the-counter products. ADS brings key product info into one place so you can save time and money.</p>
+      <p>Our price comparison fetches data from leading Australian retailers. Browse products, check details and ratings, and quickly spot value. You can also save favourites and track prices over time.</p>
+      <p>Need quick guidance? ADS presents simple, helpful information to support smarter decisions. (Always remember: this is not a substitute for professional medical advice.) With a clean interface and mobile-friendly design, ADS aims to be a trustworthy companion for health product research.</p>
+    </section>
+
+    <!-- 3) OUTSIDE THE CONTAINER: Feature tiles -->
+    <section class="features-wrap">
+      <div class="hero-features">
+        <div class="feature animate-fade-up delay-1">
+          <span class="material-icons">price_check</span>
+          <h3>Price Compare</h3>
+          <p>See the best deals instantly for vitamins and supplements.</p>
         </div>
-        <div class="col s12 m5">
-          <div class="card white ads-card">
-            <div class="card-content">
-              <span class="card-title ads-heading">Quick summary</span>
-              <p class="ads-muted">Trending products below. Search and press Enter to see full results.</p>
-            </div>
-          </div>
+        <div class="feature animate-fade-up delay-2">
+          <span class="material-icons">chat_bubble</span>
+          <h3>Simple Guidance</h3>
+          <p>Quick, easy-to-read info so you can choose with confidence.</p>
         </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Trending -->
-  <section id="trending" class="section ads-section-gradient-pink">
-    <div class="container">
-      <h5 class="ads-heading">Top product trending</h5>
-      <div id="trending-grid" class="row"></div>
-    </div>
-  </section>
-
-  <!-- Tips -->
-  <section id="tips" class="section ads-section-gradient-blue">
-    <div class="container">
-      <h5 class="ads-heading">Tips</h5>
-      <ul class="collection ads-collection" id="tips-list"></ul>
-    </div>
-  </section>
-
-  <!-- Chatbot -->
-  <section id="chat" class="section ads-section-gradient-pink">
-    <div class="container">
-      <h5 class="ads-heading">Have a question? Ask our chatbot!</h5>
-      <div class="card white ads-card">
-        <div class="card-content">
-          <div id="chat-log" class="chat-log"></div>
-          <div class="input-field" style="margin-top:1rem;">
-            <input id="chat-input" class="ads-input" type="text" placeholder="Ask about products, prices, retailers...">
-          </div>
-          <div class="right-align">
-            <a class="btn ads-btn" id="chat-send"><i class="material-icons left">send</i>Send</a>
-          </div>
+        <div class="feature animate-fade-up delay-3">
+          <span class="material-icons">favorite_border</span>
+          <h3>Favourites</h3>
+          <p>Save items, track prices, and shop when it’s right.</p>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
-  <!-- Footer -->
-  <footer class="page-footer white ads-footer">
-    <div class="container ads-muted">
-      <div class="row">
-        <div class="col s12 m6">© <span id="year"></span> ADS</div>
-        <div class="col s12 m6 right-align"><a href="#home" class="ads-link">Back to top</a></div>
-      </div>
-    </div>
-  </footer>
+  <!-- Typing/rotating subtitle -->
+  <script>
+    (function(){
+      const phrases = [
+        "Compare prices across stores",
+        "Save favourites",
+        "Get quick, clear answers"
+      ];
+      const el = document.getElementById("rotator-text");
+      const cursor = document.querySelector(".cursor");
 
-  <!-- Load scripts: Materialize → Favs helper → Page JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script src="/js/favs.js"></script>
-  <script src="/js/app.js"></script>
+      let p = 0, i = 0, deleting = false;
+      const typeSpeed = 55, deleteSpeed = 36, holdAfterType = 1200, holdAfterDelete = 300;
+
+      function step(){
+        const text = phrases[p];
+        if (!deleting){
+          el.textContent = text.slice(0, ++i);
+          if (i === text.length){ deleting = true; return setTimeout(step, holdAfterType); }
+          return setTimeout(step, typeSpeed);
+        } else {
+          el.textContent = text.slice(0, --i);
+          if (i === 0){ deleting = false; p = (p + 1) % phrases.length; return setTimeout(step, holdAfterDelete); }
+          return setTimeout(step, deleteSpeed);
+        }
+      }
+      // blink cursor
+      setInterval(() => cursor.classList.toggle("hidden"), 450);
+      step();
+    })();
+  </script>
 </body>
 </html>

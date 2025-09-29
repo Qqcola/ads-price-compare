@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ADS – Australian Dietary Supplements</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <style id="grid-fix">
+    #trending-grid.row,
+    #results-grid.row {
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 20px !important;
+    }
+    @media (max-width: 1200px) { #trending-grid.row, #results-grid.row { grid-template-columns: repeat(3, minmax(0,1fr)) !important; } }
+    @media (max-width: 900px)  { #trending-grid.row, #results-grid.row { grid-template-columns: repeat(2, minmax(0,1fr)) !important; } }
+    @media (max-width: 600px)  { #trending-grid.row, #results-grid.row { grid-template-columns: 1fr !important; } }
+
+    /* Neutralize Materialize floats/paddings inside these grids */
+    #trending-grid.row > .col,
+    #results-grid.row > .col {
+      float: none !important; width: auto !important; margin: 0 !important; padding: 0 !important;
+    }
+
+    /* Equal-height card shell */
+    #trending-grid .card,
+    #results-grid  .card {
+      display: flex !important; flex-direction: column !important;
+      height: 520px !important; border-radius: 12px !important; overflow: hidden !important;
+    }
+
+    /* Fixed image box */
+    #trending-grid .card .card-image,
+    #results-grid  .card .card-image {
+      height: 220px !important; display: flex !important; align-items: center !important; justify-content: center !important;
+      background: #fff !important; overflow: hidden !important; border-radius: 12px 12px 0 0 !important;
+    }
+    #trending-grid .card .card-image img,
+    #results-grid  .card .card-image img {
+      width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important;
+    }
+
+    /* Content + fonts */
+    #trending-grid .card .card-content,
+    #results-grid  .card .card-content { flex: 1 !important; display: flex !important; flex-direction: column !important; gap: 6px !important; }
+    #trending-grid .card .card-title,
+    #results-grid  .card .card-title {
+      display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important;
+      overflow: hidden !important; text-overflow: ellipsis !important;
+      font-size: .95rem !important; line-height: 1.2rem !important;
+      min-height: calc(1.2rem * 2) !important; max-height: calc(1.2rem * 2) !important; margin-bottom: 6px !important;
+    }
+    #trending-grid .rating-wrap, #trending-grid .reviews-line,
+    #results-grid  .rating-wrap, #results-grid  .reviews-line { min-height: 18px !important; font-size: .85rem !important; }
+    #trending-grid .retailer-list, #results-grid .retailer-list {
+      max-height: 72px !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; gap: 6px !important; margin-top: 6px !important;
+    }
+    #trending-grid .retailer-row, #results-grid .retailer-row { display: grid !important; grid-template-columns: 1fr auto auto !important; gap: 10px !important; align-items: center !important; font-size: .85rem !important; }
+    #trending-grid .retailer-view, #results-grid .retailer-view { font-size: .8rem !important; }
+    #trending-grid .card .card-action, #results-grid .card .card-action { margin-top: auto !important; padding-top: 4px !important; border-top: 0 !important; }
+
+    /* Cookies */
+    .cookies-fab{
+      position:fixed; right:24px; bottom:22px; z-index:60;
+      background:#0b1220; color:#fff; border:none; cursor:pointer;
+      border-radius:9999px; padding:10px 16px; font-weight:700;
+      box-shadow:0 10px 28px rgba(2,6,23,.35);
+    }
+
+    .cookies-card{
+      position:fixed; right:24px; bottom:74px; z-index:59;
+      width:min(640px, 92vw);
+      background:rgba(255,255,255,.98);
+      border-radius:22px; box-shadow:0 20px 56px rgba(2,6,23,.28);
+      padding:18px 18px 6px;
+      opacity:0; transform:translateY(12px) scale(.98);
+      pointer-events:none; transition:.18s ease;
+    }
+    .cookies-card.open{
+      opacity:1; transform:translateY(0) scale(1); pointer-events:auto;
+    }
+    .cookies-card h3{
+      font-family:'Montserrat',sans-serif; font-size:1.15rem;
+      margin:2px 0 10px; color:#0f172a;
+    }
+    .cookies-row{
+      display:grid; grid-template-columns:220px 1fr; gap:12px;
+      align-items:center; padding:12px 0; border-top:1px solid #eef2f7;
+      font-size:1rem; color:#0f172a;
+    }
+    .cookies-row:first-of-type{ border-top:none; }
+    .badge-state{
+      display:inline-block; font-size:.88rem; padding:2px 10px;
+      border-radius:9999px; background:#e6f3ff; color:#0b5cb4; font-weight:700;
+    }
+    .badge-missing{ background:#fde8e8; color:#b42318; }
+    .cookies-value{ color:#0b5cb4; word-break:break-all; }
+    
+  </style>
+</head>
+<body class="ads-bg">
+
+  <!-- Top Nav -->
+  <nav class="white z-depth-0 ads-nav" role="navigation" data-component="navbar">
+    <div class="nav-wrapper container nav-flex">
+      <a href="/main_page.html" class="brand-logo ads-brand">
+        <span class="brand-badge">ADS</span>
+        <span class="brand-text">Australian Dietary Supplements</span>
+      </a>
+
+      <!-- Mobile menu -->
+      <a href="#" data-target="mobile-nav" class="sidenav-trigger ads-icon">
+        <i class="material-icons">menu</i>
+      </a>
+
+      <!-- Inline search -->
+      <form class="nav-search hide-on-small-only" role="search" aria-label="Product search" id="home-search-form">
+        <div class="input-field">
+          <i class="material-icons prefix ads-icon" id="home-search-go" style="cursor:pointer">search</i>
+          <input id="search-input" class="ads-input" type="text"
+                 placeholder="Search supplements, brands, retailers…" autocomplete="off">
+        </div>
+      </form>
+
+      <!-- Right menu -->
+      <ul class="right hide-on-med-and-down nav-links">
+        <li><a href="#home" class="ads-link">Home</a></li>
+        <li><a href="#tips" class="ads-link">Tips</a></li>
+        <li><a href="/chat" class="ads-link">Chatbot</a></li>
+        <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+        <li class="nav-logout">
+          <form action="/auth/logout" method="post" style="margin:0">
+            <button class="btn ads-btn" type="submit">Logout</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <ul class="sidenav" id="mobile-nav">
+    <li><a href="/" class="ads-link">Home</a></li>
+    <li><a href="#tips" class="ads-link">Tips</a></li>
+    <li><a href="/chat" class="ads-link">Chatbot</a></li>
+    <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+    <form action="/auth/logout" method="post" style="margin:0">
+      <button type="submit" class="btn red darken-1" style="width:100%">Logout</button>
+    </form>
+  </ul>
+
+  <!-- Hero -->
+  <header id="home" class="section ads-hero">
+    <div class="container">
+      <div class="row valign-wrapper">
+        <div class="col s12 m7">
+          <h3 class="ads-title">Find the best price on popular supplements!</h3>
+          <p class="ads-muted">Type a query and hit Enter to view all matching products.</p>
+        </div>
+        <div class="col s12 m5">
+          <div class="card white ads-card">
+            <div class="card-content">
+              <span class="card-title ads-heading">Quick summary</span>
+              <p class="ads-muted">Trending products below. Search and press Enter to see full results.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Trending -->
+  <section id="trending" class="section ads-section-gradient-pink">
+    <div class="container">
+      <h5 class="ads-heading">Top product trending</h5>
+      <div id="trending-grid" class="row"></div>
+    </div>
+  </section>
+
+  <!-- Tips -->
+  <section id="tips" class="section ads-section-gradient-blue">
+    <div class="container">
+      <h5 class="ads-heading">Tips</h5>
+      <ul class="collection ads-collection" id="tips-list"></ul>
+    </div>
+  </section>
+
+  <!-- Chatbot -->
+  <section id="chat" class="section ads-section-gradient-pink">
+    <div class="container">
+      <h5 class="ads-heading">Have a question? Ask our chatbot!</h5>
+      <div class="card white ads-card">
+        <div class="card-content">
+          <div id="chat-log" class="chat-log"></div>
+          <div class="input-field" style="margin-top:1rem;">
+            <input id="chat-input" class="ads-input" type="text" placeholder="Ask about products, prices, retailers...">
+          </div>
+          <div class="right-align">
+            <a class="btn ads-btn" id="chat-send"><i class="material-icons left">send</i>Send</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="page-footer white ads-footer">
+    <div class="container ads-muted">
+      <div class="row">
+        <div class="col s12 m6">© <span id="year"></span> ADS</div>
+        <div class="col s12 m6 right-align"><a href="#home" class="ads-link">Back to top</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookies -->
+  <aside id="cookiesCard" class="cookies-card" aria-hidden="true">
+    <h3>Cookies</h3>
+    <div class="cookies-row">
+      <div>Name</div>
+      <div id="hudName" class="cookies-value">—</div>
+    </div>
+
+    <div class="cookies-row">
+      <div>Email</div>
+      <div id="hudEmail" class="cookies-value">—</div>
+    </div>
+
+    <div class="cookies-row">
+      <div>Session ID (jti)</div>
+      <div id="hudJti" class="cookies-value">—</div>
+    </div>
+  </aside>
+
+  <button id="cookiesToggle" class="cookies-fab" aria-expanded="false">
+    cookies
+  </button>
+
+  <!-- Logout confirmation modal -->
+  <div id="logoutConfirm" class="modal logout-modal">
+    <div class="modal-content">
+      <div class="logout-head">
+        <i class="material-icons">logout</i>
+        <h5 style="margin:0">Log out?</h5>
+      </div>
+      <p class="logout-text">Are you sure you want to log out?</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn btn-ghost btn-rounded">No</a>
+      <a href="#!" id="confirmLogout" class="btn btn-gradient-danger btn-rounded">Yes, log me out</a>
+    </div>
+  </div>
+
+  <script src="/js/home.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- Initialize modal & intercept logout -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const modalEl = document.getElementById('logoutConfirm');
+      const modal   = M.Modal.init(modalEl, { dismissible: true });
+      let pendingForm = null;
+
+      // Intercept all logout forms
+      document.querySelectorAll('form[action="/auth/logout"]').forEach((form) => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          pendingForm = form;
+          modal.open();
+        });
+      });
+
+      // Confirm → submit the original form
+      document.getElementById('confirmLogout').addEventListener('click', () => {
+        if (pendingForm) pendingForm.submit();
+      });
+    });
+  </script>
+
+
+  <script src="/js/favs.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

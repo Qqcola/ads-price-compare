@@ -1,4 +1,3 @@
-// src/server.js
 require("./configs/db");
 require("dotenv").config();
 
@@ -7,6 +6,7 @@ const path = require("path");
 const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
+const cookieParser = require("cookie-parser");
 
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
@@ -16,15 +16,22 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json({ limit: "1mb" })); // parse application/json
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); 
 
+const authRoutes = require("../login_signup/routes/auth");
+const authController = require("../login_signup/controllers/authController");
 const routes = require("./routes/api");
+
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 // ---------- Static frontend ----------
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
 app.use(express.static(PUBLIC_DIR));
 
+app.use("/", authRoutes);
 app.use("/api", routes);
+app.get("/api/me", authController.me);  
+app.get("/api/session", authController.sessionInfo); 
 
 app.get("/chat", (req, res) => {
   console.log("Access to /chatbot");
@@ -41,17 +48,16 @@ io.on("connection", (socket) => {
   console.log("socket connected", socket.id);
 
   socket.on("message_chatbot", async (params) => {
-    // console.log("start", query);
     try {
       const resp = await fetch("http://localhost:3010/inference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: params['text'], history: params['history']}),
+        body: JSON.stringify({ query: params['text'], history: params['history'] }),
       });
 
       if (!resp.ok) {
         const text = await resp.text();
-        socket.emit("chunk_response", { message: "Upstream error: " +  params['text'] });
+        socket.emit("chunk_response", { message: "Upstream error: " + params['text'] });
         return;
       }
 
@@ -59,7 +65,7 @@ io.on("connection", (socket) => {
         let process_chunk = JSON.parse(Buffer.from(chunk).toString('utf8'))['text'];
         socket.emit("chunk_response", { process_chunk });
       }
-     
+
       socket.emit("done", { message: "done" });
     } catch (err) {
       console.error("broadcaster fetch error", err);
@@ -72,4 +78,3 @@ const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
   console.log(`ADS app running at http://localhost:${PORT}`);
 });
-
