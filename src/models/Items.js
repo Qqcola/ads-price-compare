@@ -12,7 +12,11 @@ const ItemSchema = new mongoose.Schema({
     avg_reviews: Number,
     count_reviews: Number,
     type_discount_cm: String,
-    brand: String
+    brand: String,
+    warnings: String,
+    ingredients: String,
+    directions: String,
+    general_information: String
 });
 
 module.exports = mongoose.model('Items', ItemSchema);

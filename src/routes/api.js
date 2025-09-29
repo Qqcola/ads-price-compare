@@ -7,6 +7,8 @@ const conversationControllers = require('../controllers/conversations');
 
 router.get('/search', itemControllers.itemsSearch);
 router.get('/trending', itemControllers.itemsTrending);
+router.get('/itemById', itemControllers.itemsSearchById);
+
 router.post('/pushConversation', conversationControllers.addConversation);
 router.put('/updateConversation', conversationControllers.updateConversation);
 router.post('/findConversationByUser', conversationControllers.findConversationsByUser);
