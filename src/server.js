@@ -18,8 +18,8 @@ app.use(express.json({ limit: "1mb" })); // parse application/json
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); 
 
-const authRoutes = require("../login_signup/routes/auth");
-const authController = require("../login_signup/controllers/authController");
+const authRoutes = require("./routes/auth");
+const authController = require('./controllers/authController');
 const routes = require("./routes/api");
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
