@@ -97,7 +97,7 @@
         const price = (extractRetailers(it)[0] || {}).price;
         el.innerHTML = `
           <img class="rect" src="${getImageUrl(it)}" referrerpolicy="no-referrer">
-          <a class="name" href="/item?id=${it._id || it.id}">${(it.name || `Product ${idx+1}`)}</a>
+          <a class="name" href="/item?id=${it.id}">${(it.name || `Product ${idx+1}`)}</a>
           <div class="price">${price != null ? fmtCurrency(price) : ""}</div>`;
         track.appendChild(el);
       });
