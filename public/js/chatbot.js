@@ -279,6 +279,9 @@ window.addEventListener("popstate", (e) => {
     const data = await res.json().catch(() => ({}));
     console.log(data.user)
     if (res.ok && data.ok && data.user) {
+      if (data.user.email == null && data.user.jti == null){
+        window.location.href = "/"
+      }
       me = data.user;                     // { fullName, email, jti }
       userid = me.email || me.jti || 'guest';
     } else {

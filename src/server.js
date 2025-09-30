@@ -47,6 +47,33 @@ app.get("/item", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "item.html"));
 });
 
+app.get("/index", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+});
+
+app.get("/loginPage", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "login.html"));
+});
+
+app.get("/signupPage", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "signup.html"));
+});
+
+app.get("/homePage", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "home.html"));
+});
+
+app.get("/list", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "list.html"));
+});
+
+app.get("/search", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "search.html"));
+});
+
+
+
+
 app.get('/.well-known/appspecific/com.chrome.devtools.json', (_req, res) => {
   res.status(204).end();
 });

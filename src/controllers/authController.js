@@ -10,14 +10,12 @@ const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET  || "dev_access_secret_chan
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "dev_refresh_secret_change_me";
 const isProd = process.env.NODE_ENV === "production";
 
-const PUBLIC_DIR = path.resolve(__dirname, "../../public");
-
 function setAuthCookies(res, { accessToken, refreshToken }) {
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
-    maxAge: 60 * 1000, // 1 minute (just for checking purpose only)
+    maxAge: 60 * 60 * 1000,
     path: "/",
   });
   res.cookie("refreshToken", refreshToken, {
@@ -52,9 +50,9 @@ function newJti() {
 }
 
 /* ---------------- Pages (static files) ---------------- */
-exports.signupPage = (_req, res) => res.sendFile(path.join(PUBLIC_DIR, "signup.html"));
-exports.loginPage  = (_req, res) => res.sendFile(path.join(PUBLIC_DIR, "login.html"));
-exports.homePage   = (_req, res) => res.sendFile(path.join(PUBLIC_DIR, "home.html"));
+exports.signupPage = (_req, res) => res.redirect("/signupPage");
+exports.loginPage  = (_req, res) => res.redirect("/loginPage");
+exports.homePage   = (_req, res) => res.redirect("/homePage");
 
 /* ---------------- Actions ---------------- */
 exports.signup = async (req, res) => {
@@ -77,7 +75,7 @@ exports.signup = async (req, res) => {
       refreshTokenId: null
     });
 
-    return res.redirect("/login.html");
+    return res.redirect("/loginPage");
   } catch (_err) {
     return res.status(500).send("Internal server error during signup.");
   }
@@ -100,7 +98,7 @@ exports.login = async (req, res) => {
     const refreshToken = signRefreshToken(user, jti);
     setAuthCookies(res, { accessToken, refreshToken });
 
-    return res.redirect("/index.html");
+    return res.redirect("/index");
   } catch (_err) {
     return res.status(500).send("Internal server error during login.");
   }
@@ -118,21 +116,21 @@ exports.logout = async (req, res) => {
     res.clearCookie("accessToken", { path: "/" });
     res.clearCookie("refreshToken", { path: "/" });
     res.clearCookie("sid", { path: "/" });
-    return res.redirect("/login.html");
+    return res.redirect("/loginPage");
   } catch {
-    return res.redirect("/login.html");
+    return res.redirect("/loginPage");
   }
 };
 
 exports.requireAuth = (req, res, next) => {
   const token = req.cookies?.accessToken;
-  if (!token) return res.redirect("/login.html");
+  if (!token) return res.redirect("/loginPage");
   try {
     const payload = jwt.verify(token, ACCESS_SECRET);
     req.userId = payload.sub;
     next();
   } catch {
-    return res.redirect("/login.html");
+    return res.redirect("/loginPage");
   }
 };
 

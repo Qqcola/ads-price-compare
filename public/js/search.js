@@ -1,5 +1,20 @@
 // public/js/search.js — search + pagination + "Save" + strong de-duplication
-(function () {
+function main() {
+  async function authUser() {
+    try {
+      const res = await fetch('/api/me', { credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok && data.user) {
+        console.log(1);
+        if (data.user.email == null && data.user.jti == null){
+          window.location.href = "/"
+        }
+      }
+    } catch {
+      
+    }
+  }
+  authUser();
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
@@ -257,7 +272,7 @@
     const go = () => {
       const q = input?.value?.trim();
       if (!q) return;
-      window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+      window.location.href = `/search?q=${encodeURIComponent(q)}`;
     };
 
     if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); go(); });
@@ -287,4 +302,5 @@
   }
 
   load();
-})();
+};
+main();

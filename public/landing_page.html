@@ -22,8 +22,8 @@
     <div class="container topbar-inner">
       <span></span>
       <ul class="actions">
-        <li><a class="btn-pill btn-ghost" href="login.html">Sign In</a></li>
-        <li><a class="btn-pill btn-ghost" href="signup.html">Sign Up</a></li>
+        <li><a class="btn-pill btn-ghost" href="/loginPage">Sign In</a></li>
+        <li><a class="btn-pill btn-ghost" href="/signupPage">Sign Up</a></li>
       </ul>
     </div>
   </nav>
@@ -73,7 +73,17 @@
 
   <!-- Typing/rotating subtitle -->
   <script>
-    (function(){
+    (async function init(){
+       try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok && data.user) {
+          if (data.user.email != null && data.user.jti != null){
+            window.location.href = "/index"
+          }
+        }
+      } catch {
+      }
       const phrases = [
         "Compare prices across stores",
         "Save favourites",

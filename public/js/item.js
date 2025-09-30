@@ -1,4 +1,19 @@
-  (function () {
+function main() {
+  async function authUser() {
+    try {
+      const res = await fetch('/api/me', { credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok && data.user) {
+        console.log(1);
+        if (data.user.email == null && data.user.jti == null){
+          window.location.href = "/"
+        }
+      }
+    } catch {
+      
+    }
+  }
+  authUser();
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
@@ -8,27 +23,44 @@
   const toNumber = (v) => {
     if (v == null) return null;
     if (typeof v === "number") return Number.isFinite(v) ? v : null;
-    if (typeof v === "string") { const m = v.match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
+    if (typeof v === "string") {
+      const m = v.match(/-?\d+(\.\d+)?/);
+      return m ? Number(m[0]) : null;
+    }
     return null;
   };
   const fmtCurrency = (v) => {
     if (v == null || Number.isNaN(Number(v))) return "";
-    try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(v)); }
-    catch { return `$${Number(v).toFixed(2)}`; }
+    try {
+      return new Intl.NumberFormat("en-AU", {
+        style: "currency",
+        currency: "AUD",
+      }).format(Number(v));
+    } catch {
+      return `$${Number(v).toFixed(2)}`;
+    }
   };
-  const titleizeKey = (k) => String(k).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const titleizeKey = (k) =>
+    String(k)
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
 
-  const getImageUrl = (doc) => (/^https?:\/\//i.test(doc?.img_url || "")) ? doc.img_url : PLACEHOLDER_IMG;
+  const getImageUrl = (doc) =>
+    /^https?:\/\//i.test(doc?.img_url || "") ? doc.img_url : PLACEHOLDER_IMG;
 
   function extractRetailers(doc) {
-    const priceObj = (doc && typeof doc.price === "object") ? doc.price : {};
-    const urlObj   = (doc && typeof doc.url   === "object") ? doc.url   : {};
-    const keys = new Set([...Object.keys(priceObj || {}), ...Object.keys(urlObj || {})]);
+    const priceObj = doc && typeof doc.price === "object" ? doc.price : {};
+    const urlObj = doc && typeof doc.url === "object" ? doc.url : {};
+    const keys = new Set([
+      ...Object.keys(priceObj || {}),
+      ...Object.keys(urlObj || {}),
+    ]);
     const rows = [];
     for (const key of keys) {
       const price = toNumber(priceObj[key]);
-      const url   = typeof urlObj[key] === "string" ? urlObj[key] : "";
-      if (price != null || url) rows.push({ key, name: titleizeKey(key), price, url });
+      const url = typeof urlObj[key] === "string" ? urlObj[key] : "";
+      if (price != null || url)
+        rows.push({ key, name: titleizeKey(key), price, url });
     }
     rows.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
     return rows;
@@ -39,8 +71,12 @@
     if (!Number.isFinite(n)) return "";
     const v = Math.max(0, Math.min(5, n));
     const full = Math.floor(v);
-    return `<span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(5-full)}</span>
-            <span class="ads-muted" style="margin-left:6px">${v.toFixed(1)}</span>`;
+    return `<span style="color:#FFD700;">${"★".repeat(full)}${"☆".repeat(
+      5 - full
+    )}</span>
+            <span class="ads-muted" style="margin-left:6px">${v.toFixed(
+              1
+            )}</span>`;
   };
 
   // ---------- Similar products slider ----------
@@ -52,8 +88,19 @@
 
     let index = 0;
 
-    const getGap = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gap")) || 12;
-    const getVisible = () => Math.max(1, parseInt(getComputedStyle(document.documentElement).getPropertyValue("--visible") || "5"));
+    const getGap = () =>
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--gap")
+      ) || 12;
+    const getVisible = () =>
+      Math.max(
+        1,
+        parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--visible"
+          ) || "5"
+        )
+      );
 
     const computeSizes = () => {
       const firstCard = track.querySelector(".card");
@@ -96,8 +143,12 @@
         el.className = "card";
         const price = (extractRetailers(it)[0] || {}).price;
         el.innerHTML = `
-          <img class="rect" src="${getImageUrl(it)}" referrerpolicy="no-referrer">
-          <a class="name" href="/item?id=${it.id}">${(it.name || `Product ${idx+1}`)}</a>
+          <img class="rect" src="${getImageUrl(
+            it
+          )}" referrerpolicy="no-referrer">
+          <a class="name" href="/item?id=${it.id}">${
+          it.name || `Product ${idx + 1}`
+        }</a>
           <div class="price">${price != null ? fmtCurrency(price) : ""}</div>`;
         track.appendChild(el);
       });
@@ -105,7 +156,9 @@
       requestAnimationFrame(() => slideToIndex(0));
     };
 
-    window.addEventListener("resize", () => requestAnimationFrame(() => slideToIndex(index)));
+    window.addEventListener("resize", () =>
+      requestAnimationFrame(() => slideToIndex(index))
+    );
   }
 
   // ---------- Accordion ----------
@@ -123,7 +176,10 @@
         } else {
           item.classList.add("open");
           content.style.maxHeight = content.scrollHeight + "px";
-          setTimeout(() => head.scrollIntoView({ behavior: "smooth", block: "start" }), 180);
+          setTimeout(
+            () => head.scrollIntoView({ behavior: "smooth", block: "start" }),
+            180
+          );
         }
       });
     });
@@ -132,14 +188,18 @@
   // ---------- Build accordion ----------
   function createAndAppendDetailInformation(list) {
     const acc = $("#accordion");
-    const html = (list || []).map((it) => `
+    const html = (list || [])
+      .map(
+        (it) => `
       <div class="item" data-key="${it.key}">
         <div class="head">
           <h3 style="font-weight: bold">${it.title}</h3>
           <div class="chev">▾</div>
         </div>
         <div class="content"><p>${it.content || ""}</p></div>
-      </div>`).join("");
+      </div>`
+      )
+      .join("");
     acc.innerHTML = html;
   }
 
@@ -174,17 +234,31 @@
     // Reviews summary
     const rev = $("#itemReview");
     const count = toNumber(ITEM.count_reviews);
-    rev.innerHTML = `${ratingStars(ITEM.avg_reviews)} ${Number.isFinite(count) ? `${count} reviews` : ""}`;
+    rev.innerHTML = `${ratingStars(ITEM.avg_reviews)} ${
+      Number.isFinite(count) ? `${count} reviews` : ""
+    }`;
 
     // Retailer rows
     const list = $("#retailerList");
     list.innerHTML = rows.length
-      ? rows.map(r => `
+      ? rows
+          .map(
+            (r) => `
           <div class="retailer-row">
             <span class="retailer-name">${r.name}</span>
-            <span class="retailer-price">${r.price != null ? fmtCurrency(r.price) : "<span class='ads-muted'>—</span>"}</span>
-            ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">PURCHASE</a>` : ""}
-          </div>`).join("")
+            <span class="retailer-price">${
+              r.price != null
+                ? fmtCurrency(r.price)
+                : "<span class='ads-muted'>—</span>"
+            }</span>
+            ${
+              r.url
+                ? `<a href="${r.url}" target="_blank" rel="noopener" class="btn-flat retailer-view">PURCHASE</a>`
+                : ""
+            }
+          </div>`
+          )
+          .join("")
       : `<p class="ads-muted" style="margin-top:6px">No retailer data.</p>`;
 
     // Accordion
@@ -195,8 +269,8 @@
       warnings: "Warnings",
     };
     const accData = Object.keys(sections)
-      .filter(k => ITEM[k])
-      .map(k => ({ key: k, title: sections[k], content: ITEM[k] }));
+      .filter((k) => ITEM[k])
+      .map((k) => ({ key: k, title: sections[k], content: ITEM[k] }));
     createAndAppendDetailInformation(accData);
     activateScrollInformation();
 
@@ -217,17 +291,27 @@
 
   // ---------- search bar wiring (same as My List) ----------
   function wireSearchBar() {
-    const form  = $("#page-search-form");
+    const form = $("#page-search-form");
     const input = $("#page-search-input");
-    const icon  = $("#page-search-go");
+    const icon = $("#page-search-go");
     const go = () => {
       const q = input?.value?.trim();
       if (!q) return;
-      window.location.href = `/search.html?q=${encodeURIComponent(q)}`;
+      window.location.href = `/search?q=${encodeURIComponent(q)}`;
     };
-    if (form)  form.addEventListener("submit", (e) => { e.preventDefault(); go(); });
-    if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
-    if (icon)  icon.addEventListener("click", go);
+    if (form)
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        go();
+      });
+    if (input)
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          go();
+        }
+      });
+    if (icon) icon.addEventListener("click", go);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -236,6 +320,7 @@
     if (window.M && M.Sidenav) M.Sidenav.init(sidenavs);
 
     wireSearchBar();
-    fetchItembyID().catch(()=>{});
+    fetchItembyID().catch(() => {});
   });
-})();
+};
+main();
