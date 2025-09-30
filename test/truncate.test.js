@@ -20,3 +20,4 @@ describe("Title truncation", () => {
     expect(out).to.match(/\w…$/);
   });
 });
+  
