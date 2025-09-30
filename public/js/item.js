@@ -135,7 +135,7 @@
     const html = (list || []).map((it) => `
       <div class="item" data-key="${it.key}">
         <div class="head">
-          <h3>${it.title}</h3>
+          <h3 style="font-weight: bold">${it.title}</h3>
           <div class="chev">▾</div>
         </div>
         <div class="content"><p>${it.content || ""}</p></div>
