@@ -7,6 +7,7 @@ const path = require("path");
 const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
+const cookieParser = require("cookie-parser");
 
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
@@ -16,15 +17,22 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json({ limit: "1mb" })); // parse application/json
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); 
 
+const authRoutes = require("./routes/auth");
+const authController = require('./controllers/authController');
 const routes = require("./routes/api");
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 // ---------- Static frontend ----------
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
-app.use(express.static(PUBLIC_DIR));
+// app.use(express.static(PUBLIC_DIR));
+app.use(express.static(PUBLIC_DIR, { index: "./landing_page.html" }))
 
+app.use("/", authRoutes);
 app.use("/api", routes);
+app.get("/api/me", authController.me);  
+app.get("/api/session", authController.sessionInfo); 
 
 app.get("/chat", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "chatbot.html"));
@@ -37,6 +45,10 @@ app.get("/chat/:conversationId", (req, res) => {
 
 app.get("/item", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "item.html"));
+});
+
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (_req, res) => {
+  res.status(204).end();
 });
 
 io.on("connection", (socket) => {

@@ -77,7 +77,7 @@
   <!-- Top Nav (navbar search removed) -->
   <nav class="white z-depth-0 ads-nav" role="navigation" data-component="navbar">
     <div class="nav-wrapper container nav-flex">
-      <a href="/" class="brand-logo ads-brand">
+      <a href="/index.html" class="brand-logo ads-brand">
         <span class="brand-badge">ADS</span>
         <span class="brand-text">Australian Dietary Supplements</span>
       </a>
@@ -89,10 +89,15 @@
 
       <!-- Right menu -->
       <ul class="right hide-on-med-and-down nav-links">
-        <li><a href="/" class="ads-link">Home</a></li>
+        <li><a href="/index.html" class="ads-link">Home</a></li>
         <li><a href="#tips" class="ads-link">Tips</a></li>
         <li><a href="/chat" class="ads-link">Chatbot</a></li>
         <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+        <li class="nav-logout">
+          <form action="/auth/logout" method="post" style="margin:0">
+            <button class="btn ads-btn" type="submit">Logout</button>
+          </form>
+        </li>
       </ul>
     </div>
   </nav>
@@ -103,6 +108,9 @@
     <li><a href="#tips" class="ads-link">Tips</a></li>
     <li><a href="/chat" class="ads-link">Chatbot</a></li>
     <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+    <form action="/auth/logout" method="post" style="margin:0">
+      <button type="submit" class="btn red darken-1" style="width:100%">Logout</button>
+    </form>
   </ul>
 
   <!-- Hero (helper line removed) -->
@@ -158,7 +166,7 @@
   </section>
 
   <!-- Chatbot -->
-  <section id="chat" class="section ads-section-gradient-pink">
+  <!-- <section id="chat" class="section ads-section-gradient-pink">
     <div class="container">
       <h5 class="ads-heading">Have a question? Ask our chatbot!</h5>
       <div class="card white ads-card">
@@ -173,7 +181,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- Footer -->
   <footer class="page-footer white ads-footer">
@@ -184,6 +192,47 @@
       </div>
     </div>
   </footer>
+
+  <!-- Logout confirmation modal -->
+  <div id="logoutConfirm" class="modal logout-modal">
+    <div class="modal-content">
+      <div class="logout-head">
+        <i class="material-icons">logout</i>
+        <h5 style="margin:0">Log out?</h5>
+      </div>
+      <p class="logout-text">Are you sure you want to log out?</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn btn-ghost btn-rounded">No</a>
+      <a href="#!" id="confirmLogout" class="btn btn-gradient-danger btn-rounded">Yes, log me out</a>
+    </div>
+  </div>
+
+  <script src="/js/home.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- Initialize modal & intercept logout -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const modalEl = document.getElementById('logoutConfirm');
+      const modal   = M.Modal.init(modalEl, { dismissible: true });
+      let pendingForm = null;
+
+      // Intercept all logout forms
+      document.querySelectorAll('form[action="/auth/logout"]').forEach((form) => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          pendingForm = form;
+          modal.open();
+        });
+      });
+
+      // Confirm → submit the original form
+      document.getElementById('confirmLogout').addEventListener('click', () => {
+        if (pendingForm) pendingForm.submit();
+      });
+    });
+  </script>
 
   <!-- Load scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
