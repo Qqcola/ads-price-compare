@@ -5,8 +5,7 @@ function activateSwitchSimilarProduct() {
   const btnR = document.querySelector(".btn-right");
   const visibleCountEl = document.getElementById("visibleCount");
 
-  let index = 0; // index of the left-most visible card
-
+  let index = 0; 
   function getGap() {
     return (
       parseFloat(
@@ -16,7 +15,6 @@ function activateSwitchSimilarProduct() {
   }
 
   function getVisible() {
-    // read CSS variable --visible (string) and parse to int
     const v =
       getComputedStyle(document.documentElement).getPropertyValue(
         "--visible"
@@ -25,7 +23,6 @@ function activateSwitchSimilarProduct() {
   }
 
   function computeSizes() {
-    // ensure cards have width set via CSS; compute a single card width (including gap)
     const firstCard = track.querySelector(".card");
     if (!firstCard) return 0;
     const gap = getGap();
@@ -72,17 +69,15 @@ function activateSwitchSimilarProduct() {
   populateSimilar = function (items) {
     track.innerHTML = "";
     const totalItems = items && items.length ? Math.min(items.length, 15) : 15;
-    // console.log(similarItemList[0]['price']['chemist_warehouse']);  
+    console.log(similarItemList[0]['price']['chemist_warehouse']);  
     const used = items.slice(0, totalItems);
     used.forEach((it, idx) => {
       const el = document.createElement("div");
       el.className = "card";
       const priceText = it.price.chemist_warehouse;
       el.innerHTML = `
-            <img class="rect" src="">
-            <div class=\"name\">${escapeHtml(
-              it.name || "Sản phẩm " + (idx + 1)
-            )}</div>
+            <img class="rect" src="${it.img_url}">
+            <a class=\"name\" href="/item?id=${it.id}">${escapeHtml(it.name)}</a>
             <div class=\"price\">${priceText ? "$" + priceText : ""}</div>`;
       track.appendChild(el);
     });
@@ -109,7 +104,6 @@ function activateSwitchSimilarProduct() {
     );
   }
 
-  // Recompute on resize (responsive). Using rAF to avoid layout thrash.
   let resizeTimer = null;
   function onResize() {
     if (resizeTimer) cancelAnimationFrame(resizeTimer);
@@ -166,8 +160,9 @@ async function fetchItembyID() {
     if (!res.ok) throw new Error("Network response not ok");
     const json = await res.json();
     item = json["item"];
-    console.log(item);
+    // console.log(item);
     similarItemList = json["similarItems"];
+    console.log(similarItemList[0]);
     applyItemToDOM();
   } catch (e) {
     console.error(e);
@@ -188,7 +183,7 @@ function createAndAppendDetailInformation(data) {
     return `
             <div class="item" data-key="${item.key}">
                 <div class="head">
-                    <h3>${item.title}</h3>
+                    <h3 style="font-weight: bold;">${item.title}</h3>
                     <div class="chev">▾</div>
                 </div>
                 <div class="content">
@@ -216,13 +211,25 @@ function applyItemToDOM() {
   // price
   const priceEl = document.getElementById("itemPrice");
   const priceOldEl = document.getElementById("itemPriceOld");
-  const p = getFirstPrice(item.price.chemist_warehouse);
-  const pOld = getFirstPrice(item.price_old.chemist_warehouse);
-  if (priceEl)
+  if (item.price.chemist_warehouse){
+    const p = item.price.chemist_warehouse;
     priceEl.firstChild && priceEl.firstChild.nodeValue
-      ? (priceEl.firstChild.nodeValue = "$" + (p || ""))
-      : (priceEl.textContent = "$" + (p || ""));
-  if (priceOldEl) priceOldEl.textContent = pOld ? "$" + pOld + " Old" : "";
+      ? (priceEl.firstChild.nodeValue = "Chemist Warehouse: $" + p)
+      : (priceEl.textContent = "Chemist Warehouse: $" + p);
+  }
+  if (item.price_old.chemist_warehouse){
+    const pOld = item.price_old.chemist_warehouse;
+    priceOldEl.textContent = "$" + pOld;
+  }
+  if (item.price.chemist_outlet){
+    const priceElSub = document.getElementById("itemPriceSub");
+    priceElSub.style.display = "block";
+    priceElSub.textContent = "Chemist Outlet: $" + item.price.chemist_outlet;
+  }
+  if (item.price_old.chemist_outlet){
+    const priceElSub = document.getElementById("itemPriceOldSub");
+    priceElSub.textContent = "$" + item.price_old.chemist_outlet;
+  }
   // reviews
   const revEl = document.getElementById("itemReview");
   if (revEl)

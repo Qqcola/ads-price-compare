@@ -53,7 +53,6 @@ exports.itemsSearchById = async (req, res) => {
     }
     if (!item.brand) return res.status(200).json({ item: item, similarItems: [] });
     let similarItems = await Items.find({brand: item.brand, id: { $ne: item.id }}).exec();
-
     similarItems = similarItems.map((similarItem) => {
       const originalCategories = item.categories || [];
       const similarCategories = similarItem.categories || [];
@@ -65,7 +64,8 @@ exports.itemsSearchById = async (req, res) => {
       return similarItemObj;
     });
     similarItems.sort((a, b) => b.categoryMatchScore - a.categoryMatchScore);
-    res.status(200).json({item: item, similarItems: similarItems});
+    // console.log(item);
+    res.status(200).json({item: item, similarItems: similarItems });
   } catch (e) {
     console.log(e);
     res.status(500).json({ error: e });

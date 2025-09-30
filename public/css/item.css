@@ -81,9 +81,9 @@ body {
   font-size: 13px;
 }
 .price {
-  font-size: 26px;
+  font-size: 16px;
   color: #111;
-  font-weight: 800;
+  font-weight: 700;
   margin: 8px 0;
 }
 .review {
@@ -154,7 +154,7 @@ body {
 .carousel {
   position: relative;
   overflow: visible;
-  height: 250px;
+  height: 280px;
 }
 .viewport {
   overflow: hidden;
@@ -183,6 +183,10 @@ body {
   flex-direction: column;
   align-items: center;
   z-index: 0;
+}
+.rect {
+  width: 80%;
+  height: 65%;
 }
 .thumb {
   width: 100%;
