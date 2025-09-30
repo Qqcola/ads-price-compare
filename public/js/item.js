@@ -1,4 +1,3 @@
-// public/js/item.js — item detail page
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $all = (sel, root = document) => Array.from(root.querySelectorAll(sel));

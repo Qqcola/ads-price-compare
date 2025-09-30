@@ -54,7 +54,6 @@ body.item-page .container { max-width:1280px; width:100%; }
 .price{ font-size:34px; color:#111; font-weight:900; margin:10px 0 6px; }
 .review{ color:var(--muted); font-size:14px; }
 .btn-row{ margin-top:8px; }
-
 /* Right-side accordion */
 .accordion-wrap{
   width:50%; background:#fff; padding:18px; border-radius:10px;
