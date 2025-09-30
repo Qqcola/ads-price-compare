@@ -78,7 +78,7 @@ body.item-page .container { max-width:1280px; width:100%; }
 /* ---------- Similar products carousel (SCOPED!) ---------- */
 .similar{ margin-top:26px; }
 .similar .header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.similar .carousel{ position:relative; overflow:visible; height:250px; }
+.similar .carousel{ position:relative; overflow:visible; height:280px; }
 .similar .viewport{ overflow:hidden; border-radius:10px; background:#fff; padding:12px; height:100%; }
 .similar .track{ height:100%; display:flex; gap:var(--gap); transition:transform .45s cubic-bezier(.2,.9,.2,1); z-index:1; }
 
@@ -99,6 +99,10 @@ body.item-page .container { max-width:1280px; width:100%; }
 .similar .btn-left{ left:0; transform:translate(-50%, -50%); }
 .similar .btn-right{ right:0; transform:translate(50%, -50%); }
 .similar .btn-slide:active{ transform:translateY(-50%) scale(.98); }
+.rect {
+  width: 80%;
+  height: 70%;
+}
 
 /* Responsive */
 @media (max-width:1000px){
@@ -106,6 +110,11 @@ body.item-page .container { max-width:1280px; width:100%; }
   .left-card, .accordion-wrap{ width:100%; }
   .accordion-wrap{ order:3; margin-top:12px; }
   .similar{ order:4; }
+}
+@media (max-width:800px){
+  :root{
+    --visible: 3;
+  }
 }
 
 /* === Item page search bar: keep underline inside the card === */
