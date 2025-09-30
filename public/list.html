@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ADS – My List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <style>
+    /* Page-local tweaks (layout only). Shared search styles live in styles.css */
+    .retailer-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.95rem;
+    }
+    .retailer-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .retailer-view { font-size: 0.9rem; }
+    .list-actions {
+      display:flex; gap:10px; align-items:center; margin-top:10px;
+    }
+  </style>
+</head>
+<body class="ads-bg">
+  <!-- Navbar now matches other pages (pink/blue ADS badge + consistent classes) -->
+  <nav class="white z-depth-0 ads-nav" role="navigation">
+    <div class="nav-wrapper container nav-flex">
+      <a href="/" class="brand-logo ads-brand">
+        <span class="brand-badge">ADS</span>
+        <span class="brand-text">Australian Dietary Supplements</span>
+      </a>
+      <ul class="right hide-on-med-and-down nav-links">
+        <li><a href="/" class="ads-link">Home</a></li>
+        <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="section">
+    <div class="container">
+
+      <!-- On-page search (styling is global in styles.css) -->
+      <div class="card white" style="margin-bottom:16px;">
+        <div class="card-content">
+          <form id="page-search-form" class="page-search" role="search" aria-label="Search">
+            <div class="input-field">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;">search</i>
+              <input id="page-search-input" type="text" placeholder="Search supplements, brands, retailers…" autocomplete="off" />
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <h6 style="font-weight:700;margin:0;">My List</h6>
+        <a id="clear-all" class="btn-flat waves-effect"><i class="material-icons left">delete_sweep</i>CLEAR ALL</a>
+      </div>
+
+      <!-- List -->
+      <ul class="collection" id="list-collection"></ul>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="card white" style="display:none;">
+        <div class="card-content">
+          <p class="ads-muted" style="margin:0;">No saved items yet.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="/js/favs.js"></script>
+  <script src="/js/list.js"></script>
+</body>
+</html>

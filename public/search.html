@@ -2,65 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Search – ADS</title>
+  <title>ADS – Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
   <link rel="stylesheet" href="/css/styles.css" />
-</head>
-<body class="ads-bg">
 
-  <!-- Top Nav -->
+  <!-- === OVERRIDES for results grid (same as home) === -->
+  <style id="grid-fix">
+    #results-grid.row { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 20px !important; }
+    @media (max-width: 1200px) { #results-grid.row { grid-template-columns: repeat(3, minmax(0,1fr)) !important; } }
+    @media (max-width: 900px)  { #results-grid.row { grid-template-columns: repeat(2, minmax(0,1fr)) !important; } }
+    @media (max-width: 600px)  { #results-grid.row { grid-template-columns: 1fr !important; } }
+
+    #results-grid.row > .col { float: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+    #results-grid .card { display: flex !important; flex-direction: column !important; height: 520px !important; border-radius: 12px !important; overflow: hidden !important; }
+    #results-grid .card .card-image { height: 220px !important; display: flex !important; align-items: center !important; justify-content: center !important; background: #fff !important; overflow: hidden !important; border-radius: 12px 12px 0 0 !important; }
+    #results-grid .card .card-image img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
+    #results-grid .card .card-content { flex: 1 !important; display: flex !important; flex-direction: column !important; gap: 6px !important; }
+    #results-grid .card .card-title { display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: .95rem !important; line-height: 1.2rem !important; min-height: calc(1.2rem * 2) !important; max-height: calc(1.2rem * 2) !important; margin-bottom: 6px !important; }
+    #results-grid .rating-wrap, #results-grid .reviews-line { min-height: 18px !important; font-size: .85rem !important; }
+    #results-grid .retailer-list { max-height: 72px !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; gap: 6px !important; margin-top: 6px !important; }
+    #results-grid .retailer-row { display: grid !important; grid-template-columns: 1fr auto auto !important; gap: 10px !important; align-items: center !important; font-size: .85rem !important; }
+    #results-grid .retailer-view { font-size: .8rem !important; }
+    #results-grid .card .card-action { margin-top: auto !important; padding-top: 4px !important; border-top: 0 !important; }
+    .pagination { user-select: none; }
+    .pagination .waves-effect a { color: #3949ab; }
+    .pagination li.active a { background-color: #3949ab; }
+    .page-search .input-field { margin: 0; }
+    .page-search input { font-size: 16px; }
+    .page-search .material-icons { line-height: 48px; }
+  </style>
+</head>
+
+<body class="ads-bg">
   <nav class="white z-depth-0 ads-nav" role="navigation">
     <div class="nav-wrapper container nav-flex">
       <a href="/" class="brand-logo ads-brand">
         <span class="brand-badge">ADS</span>
         <span class="brand-text">Australian Dietary Supplements</span>
       </a>
-
-      <!-- Inline search -->
-      <form class="nav-search hide-on-small-only" id="results-search-form">
-        <div class="input-field">
-          <i class="material-icons prefix ads-icon" id="results-search-go" style="cursor:pointer">search</i>
-          <input id="results-search-input" class="ads-input" type="text" placeholder="Search again…" autocomplete="off">
-        </div>
-      </form>
-
-      <!-- Right menu -->
       <ul class="right hide-on-med-and-down nav-links">
         <li><a href="/" class="ads-link">Home</a></li>
+        <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
       </ul>
     </div>
   </nav>
 
-  <!-- Mobile Nav -->
-  <ul class="sidenav" id="mobile-nav">
-    <li><a href="/" class="ads-link">Home</a></li>
-  </ul>
-
-  <!-- Results -->
-  <main class="section ads-section-gradient-blue">
+  <main class="section">
     <div class="container">
-      <h5 class="ads-heading">Results for: <span id="query-text"></span></h5>
+      <!-- Compact search bar on the page -->
+      <div class="card white" style="margin-bottom:16px;">
+        <div class="card-content">
+          <form id="page-search-form" class="page-search" role="search" aria-label="Search">
+            <div class="input-field">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;">search</i>
+              <input id="page-search-input" type="text" 
+                    placeholder="Search supplements, brands, retailers…" 
+                    autocomplete="off" />
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+      <h6 id="results-title" style="font-weight:700;">Results</h6>
       <div id="results-grid" class="row"></div>
-      <div id="results-empty" class="center-align" style="display:none;">
-        <p class="ads-muted">No results. Try a different search.</p>
+
+      <!-- Pagination -->
+      <div class="section" id="pager-wrap" style="display:none;">
+        <ul class="pagination center-align" id="pager"></ul>
       </div>
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="page-footer white ads-footer">
-    <div class="container ads-muted">
-      <div class="row">
-        <div class="col s12 m6">© <span id="year"></span> ADS</div>
-        <div class="col s12 m6 right-align"><a href="/" class="ads-link">Back to Home</a></div>
-      </div>
-    </div>
-  </footer>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="/js/favs.js"></script>
   <script src="/js/search.js"></script>
 </body>
 </html>

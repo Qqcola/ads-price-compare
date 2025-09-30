@@ -1,366 +1,144 @@
-:root {
-  /* --gap: 12px; */
-  --accent: #1a9a3b;
-  --muted: #666;
-  --card-bg: #fff;
-  --surface: #f7f7f7;
-  --ads-bg: #f9faff;
-  --ads-surface: #ffffff;
-  --ads-text: #1f2430;
-  --ads-muted: #6c7485;
-  --ads-border: #e9eef6;
-  --ads-radius: 16px;
+:root{
+  --accent:#1a9a3b; --muted:#666; --card-bg:#fff; --surface:#f7f7f7;
+  --ads-bg:#f9faff; --ads-surface:#ffffff; --ads-text:#1f2430;
+  --ads-muted:#6c7485; --ads-border:#e9eef6; --ads-radius:16px;
+  --ads-blue-100:#eef4ff; --ads-blue-400:#a8d4ff; --ads-blue-600:#6aaeff;
+  --ads-pink-100:#fff0f6; --ads-pink-400:#ffb6cf; --ads-pink-600:#ff82ac;
+  --ads-primary:var(--ads-blue-600); --ads-accent:var(--ads-pink-400);
+  --gap:12px; --visible:5;
+}
+*{ box-sizing:border-box; }
+body{ font-family:Inter, system-ui, Arial, sans-serif; margin:0; background:var(--ads-bg); color:var(--ads-text); }
+.ads-bg{ background:var(--ads-bg); }
 
-  --ads-blue-100: #eef4ff;
-  --ads-blue-400: #a8d4ff;
-  --ads-blue-600: #6aaeff;
+/* Match your other pages’ content width */
+body.item-page .container { max-width:1280px; width:100%; }
 
-  --ads-pink-100: #fff0f6;
-  --ads-pink-400: #ffb6cf;
-  --ads-pink-600: #ff82ac;
+/* NAVBAR (shared look) */
+.ads-nav{ border-bottom:1px solid var(--ads-border); }
+.nav-flex{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.ads-brand{ position:static!important; transform:none!important; display:flex; align-items:center; gap:.5rem; min-width:200px; color:var(--ads-text)!important; }
+.brand-badge{ background:linear-gradient(90deg, var(--ads-blue-400), var(--ads-pink-400)); color:#163150; font-weight:800; padding:.25rem .55rem; border-radius:999px; }
+.nav-links .ads-link{ color:var(--ads-text)!important; font-weight:600; }
+.nav-links .ads-link:hover{ color:var(--ads-primary)!important; }
 
-  --ads-primary: var(--ads-blue-600);
-  --ads-accent: var(--ads-pink-400);
-  --gap: 12px;
-  --visible: 5;
-}
-* {
-  box-sizing: border-box;
-}
-body {
-  font-family: Inter, system-ui, Arial, sans-serif;
-  margin: 0;
-  background: var(--ads-bg);
-  color: var(--ads-text);
-}
-.container {
-  max-width: 85%;
-  margin: 0 auto;
-  /* padding: 20px; */
-}
+/* ---------- SEARCH BAR (make it full-width + correct prefix spacing) ---------- */
+.search-wrap .card{ width:100% !important; margin:0 !important; }
+.search-wrap .card .card-content{ padding:16px 20px !important; }
 
-.top {
-  display: flex;
-  /* grid-template-columns: 1fr 420px; */
-  gap: 20px;
-  align-items: start;
+.page-search .input-field{ margin:0 !important; position:relative !important; }
+.page-search .input-field .prefix{ line-height:48px !important; }
+/* Materialize applies styles to "prefix ~ input" – override that directly */
+.page-search .input-field .prefix ~ input{
+  width:calc(100% - 3rem) !important;
+  margin-left:3rem !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  font-size:16px !important;
 }
-.left-card {
-  width: 50%;
-  background: #fff;
-  padding: 18px;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
-.media {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px;
-  border-radius: 8px;
-  background: #fff;
-}
-.media img {
-  max-width: 50%;
-  height: auto;
-  display: block;
-  border-radius: 6px;
-}
-.basic-info {
-  margin-top: 14px;
-  padding-top: 6px;
-  border-top: 1px solid #f0f0f0;
-}
-.title {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 8px 0;
-}
-.meta {
-  color: var(--muted);
-  font-size: 13px;
-}
-.price {
-  font-size: 16px;
-  color: #111;
-  font-weight: 700;
-  margin: 8px 0;
-}
-.review {
-  color: var(--muted);
-  font-size: 14px;
+/* safety net */
+.page-search .input-field input[type="text"]{
+  width:100% !important; max-width:none !important; box-sizing:border-box !important; font-size:16px !important;
 }
 
-/* Right side accordion */
-.accordion-wrap {
-  width: 50%;
-  background: #fff;
-  padding: 18px;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+/* ---------- LAYOUT ---------- */
+.top{ display:flex; gap:20px; align-items:flex-start; }
+.left-card{
+  width:50%; background:#fff; padding:18px; border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
 }
-.accordion {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.media{ display:flex; align-items:center; justify-content:center; padding:14px; border-radius:8px; background:#fff; }
+.media img{ max-width:50%; height:auto; display:block; border-radius:6px; }
+.basic-info{ margin-top:14px; padding-top:6px; border-top:1px solid #f0f0f0; }
+.title{ font-size:26px; font-weight:800; margin:6px 0 2px; line-height:1.3; }
+.price{ font-size:34px; color:#111; font-weight:900; margin:10px 0 6px; }
+.review{ color:var(--muted); font-size:14px; }
+.btn-row{ margin-top:8px; }
+/* Right-side accordion */
+.accordion-wrap{
+  width:50%; background:#fff; padding:18px; border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.04);
 }
-.accordion .item {
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.accordion .head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  cursor: pointer;
-}
-.accordion .head h3 {
-  margin: 0;
-  font-size: 15px;
-}
-.accordion .chev {
-  transition: transform 0.25s ease;
-}
-.accordion .content {
-  padding: 0 14px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s ease;
-}
-.accordion .content p {
-  margin: 12px 0;
-  color: var(--muted);
-  line-height: 1.45;
-}
-.accordion .item.open .content {
-  padding-bottom: 12px;
-}
-.accordion .item.open .chev {
-  transform: rotate(180deg);
-}
+.accordion{ display:flex; flex-direction:column; gap:10px; }
+.accordion .item{ border:1px solid #f0f0f0; border-radius:8px; overflow:hidden; }
+.accordion .head{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; cursor:pointer; }
+.accordion .head h3{ margin:0; font-size:15px; }
+.accordion .chev{ transition:transform .25s ease; }
+.accordion .content{ padding:0 14px; max-height:0; overflow:hidden; transition:max-height .35s ease; }
+.accordion .content p{ margin:12px 0; color:var(--muted); line-height:1.45; }
+.accordion .item.open .content{ padding-bottom:12px; }
+.accordion .item.open .chev{ transform:rotate(180deg); }
 
-/* Similar products carousel (percentage-based card sizing, responsive via CSS var) */
-.similar {
-  margin-top: 26px;
-}
-.similar .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.carousel {
-  position: relative;
-  overflow: visible;
-  height: 280px;
-}
-.viewport {
-  overflow: hidden;
-  border-radius: 10px;
-  background: #fff;
-  padding: 12px;
-  height: 100%;
-}
-.track {
-  height: 100%;
-  display: flex;
-  gap: var(--gap);
-  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1);
-  z-index: 1;
-}
-/* Card width is percentage-based so layout adjusts purely with CSS responsive rules */
-.card {
-  flex: 0 0 calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible));
-  max-width: calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible));
-  border-radius: 8px;
-  height: 100%;
-  padding: 10px;
-  text-align: center;
-  background: #fafafa;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 0;
-}
-.rect {
-  width: 80%;
-  height: 65%;
-}
-.thumb {
-  width: 100%;
-  height: 120px;
-  overflow: hidden;
-  border-radius: 6px;
-  background: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.card .name {
-  font-size: 13px;
-  margin-top: 10px;
-  color: #111;
-}
-.card .price {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 6px;
-}
+/* Retailer list (left) */
+.retailer-list{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+.retailer-row{ display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; }
+.retailer-price{ font-weight:700; }
+.retailer-view.btn-flat{ font-size:.85rem; }
 
-/* Buttons positioned slightly outside track but inside carousel; use transforms so they won't be clipped in most layouts */
-.btn-slide {
-  position: absolute;
-  top: 50%;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  border: 0;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 40;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  pointer-events: auto;
-  transform: translateY(-50%);
-}
-.btn-left {
-  left: 0;
-  transform: translate(-50%, -50%);
-}
-.btn-right {
-  right: 0;
-  transform: translate(50%, -50%);
-}
-.btn-slide:active {
-  transform: translateY(-50%) scale(0.98);
-}
+/* ---------- Similar products carousel (SCOPED!) ---------- */
+.similar{ margin-top:26px; }
+.similar .header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.similar .carousel{ position:relative; overflow:visible; height:250px; }
+.similar .viewport{ overflow:hidden; border-radius:10px; background:#fff; padding:12px; height:100%; }
+.similar .track{ height:100%; display:flex; gap:var(--gap); transition:transform .45s cubic-bezier(.2,.9,.2,1); z-index:1; }
 
-/* responsive --visible control: change number of visible cards using CSS only */
-@media (max-width: 520px) {
-  :root {
-    --visible: 2;
-  }
+.similar .card{
+  flex:0 0 calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible));
+  max-width:calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible));
+  border-radius:8px; height:100%; padding:10px; text-align:center;
+  background:#fafafa; display:flex; flex-direction:column; align-items:center; z-index:0;
 }
-@media (min-width: 521px) and (max-width: 900px) {
-  :root {
-    --visible: 3;
-  }
+.similar .card .name{ font-size:13px; margin-top:10px; color:#111; }
+.similar .card .price{ font-size:13px; color:var(--muted); margin-top:6px; }
+
+.similar .btn-slide{
+  position:absolute; top:50%; width:44px; height:44px; border-radius:10px; border:0; background:#fff;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:40;
+  box-shadow:0 6px 18px rgba(0,0,0,.08); pointer-events:auto; transform:translateY(-50%);
 }
-@media (min-width: 901px) {
-  :root {
-    --visible: 5;
-  }
-}
+.similar .btn-left{ left:0; transform:translate(-50%, -50%); }
+.similar .btn-right{ right:0; transform:translate(50%, -50%); }
+.similar .btn-slide:active{ transform:translateY(-50%) scale(.98); }
 
 /* Responsive */
-@media (max-width: 1000px) {
-  .top {
-    grid-template-columns: 1fr;
-    flex-direction: column;
-  }
-  .left-card {
-    width: 100%;
-  }
-  .accordion-wrap {
-    width: 100%;
-    order: 3;
-    margin-top: 12px;
-  }
-  .similar {
-    order: 4;
-  }
-  /* .btn-left,
-  .btn-right {
-    display: none;
-  } */
+@media (max-width:1000px){
+  .top{ flex-direction:column; }
+  .left-card, .accordion-wrap{ width:100%; }
+  .accordion-wrap{ order:3; margin-top:12px; }
+  .similar{ order:4; }
 }
 
-.ads-bg {
-  background: var(--ads-bg);
+/* === Item page search bar: keep underline inside the card === */
+.search-wrap .card { 
+  width: 100%;
+  margin: 0;
+  overflow: hidden;             /* clip any tiny overflow */
+}
+.search-wrap .card .card-content {
+  padding: 16px 20px;
 }
 
-/* NAVBAR FIX */
-.ads-nav {
-  border-bottom: 1px solid var(--ads-border);
-}
-.nav-flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.ads-brand {
-  position: static !important;
-  transform: none !important;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 0 0 auto;
-  min-width: 200px;
-  color: var(--ads-text) !important;
-}
-.brand-badge {
-  background: linear-gradient(90deg, var(--ads-blue-400), var(--ads-pink-400));
-  color: #163150;
-  font-weight: 800;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-}
-.nav-search {
-  flex: 1 1 auto;
-  max-width: 500px;
-}
-.nav-links {
-  flex: 0 0 auto;
+/* Reset Materialize input-field so prefix layout is used */
+.search-wrap .input-field {
+  margin: 0;
+  display: block !important;    /* undo any flex from older attempts */
+  position: relative;
 }
 
-/* Make nav links visible on white background */
-.ads-link {
-  color: var(--ads-text) !important;
-  font-weight: 600;
-}
-.ads-link:hover {
-  color: var(--ads-primary) !important;
+/* Standard Materialize prefix width is 3rem */
+.search-wrap .input-field .prefix {
+  width: 3rem;
 }
 
-/* HERO */
-.ads-hero {
-  padding: 2.2rem 0 1.4rem;
-  background: linear-gradient(160deg, var(--ads-blue-100), var(--ads-pink-100));
+/* CRITICAL: respect the prefix space so underline doesn't overhang */
+#page-search-input {
+  margin-left: 3rem !important;                /* move input right of icon */
+  width: calc(100% - 3rem) !important;         /* keep underline inside card */
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(0,0,0,.3) !important;
+  box-shadow: none !important;
 }
-.ads-title {
-  font-weight: 900;
-}
-.ads-heading {
-  font-weight: 800;
-}
-.ads-muted {
-  color: var(--ads-muted) !important;
-}
-
-/* SECTION GRADIENTS */
-.ads-section-gradient-blue {
-  background: linear-gradient(180deg, var(--ads-blue-100), #fff);
-}
-.ads-section-gradient-pink {
-  background: linear-gradient(180deg, var(--ads-pink-100), #fff);
-}
-/* BUTTON */
-.ads-btn {
-  background: linear-gradient(
-    90deg,
-    var(--ads-primary),
-    var(--ads-accent)
-  ) !important;
-  border-radius: 999px;
+#page-search-input:focus {
+  border-bottom: 2px solid var(--ads-primary) !important;
+  box-shadow: none !important;
 }

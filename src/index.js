@@ -1,12 +1,12 @@
-
 // src/index.js
 const express = require("express");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const User = require("./config");
 const crypto = require("crypto");
+const mongoose = require("mongoose");
+const User = require("./config");
 require("dotenv").config();
 
 const app = express();
@@ -22,70 +22,31 @@ const REFRESH_TOKEN_TTL = process.env.REFRESH_TOKEN_TTL || "7d";
 const isProd = process.env.NODE_ENV === "production";
 
 const setAuthCookies = (res, { accessToken, refreshToken }) => {
-  // access token
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000, // 15m
-    path: "/",
-  });
-
-  // refresh token (scoped to /auth)
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
-    path: "/auth",
-  });
-
-  // DEV ONLY: write a readable sid cookie with the refresh jti
+  res.cookie("accessToken", accessToken, { httpOnly: true, secure: isProd, sameSite: "lax", maxAge: 15 * 60 * 1000, path: "/" });
+  res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: isProd, sameSite: "lax", maxAge: 7 * 24 * 60 * 60 * 1000, path: "/auth" });
   if (process.env.DEBUG_SID_COOKIE === "1" && refreshToken) {
     try {
       const p = jwt.decode(refreshToken, { json: true });
-      if (p?.jti) {
-        res.cookie("sid", p.jti, {
-          httpOnly: false,     // visible to DevTools & JS — do not use in prod
-          secure: isProd,
-          sameSite: "lax",
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-          path: "/",
-        });
-      }
-    } catch (_) {}
+      if (p?.jti) res.cookie("sid", p.jti, { httpOnly: false, secure: isProd, sameSite: "lax", maxAge: 7 * 864e5, path: "/" });
+    } catch {}
   }
 };
 
 const signAccessToken = (user) =>
-  jwt.sign(
-    { sub: user._id.toString(), email: user.email, fn: user.firstName },
-    process.env.JWT_ACCESS_SECRET,
-    { expiresIn: ACCESS_TOKEN_TTL }
-  );
+  jwt.sign({ sub: user._id.toString(), email: user.email, fn: user.firstName }, process.env.JWT_ACCESS_SECRET, { expiresIn: ACCESS_TOKEN_TTL });
 
 const signRefreshToken = (user, jti) =>
-  jwt.sign(
-    { sub: user._id.toString(), jti },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: REFRESH_TOKEN_TTL }
-  );
+  jwt.sign({ sub: user._id.toString(), jti }, process.env.JWT_REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL });
 
-const newJti = () =>
-  (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex"));
+const newJti = () => (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex"));
 
 const requireAuth = (req, res, next) => {
   const token = req.cookies?.accessToken;
-  if (!token) {
-    return res.redirect(`/auth/refresh?returnTo=${encodeURIComponent(req.originalUrl)}`);
-  }
+  if (!token) return res.redirect(`/auth/refresh?returnTo=${encodeURIComponent(req.originalUrl)}`);
   try {
     const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-    req.userId = payload.sub;
-    return next();
-  } catch {
-    return res.redirect(`/auth/refresh?returnTo=${encodeURIComponent(req.originalUrl)}`);
-  }
+    req.userId = payload.sub; return next();
+  } catch { return res.redirect(`/auth/refresh?returnTo=${encodeURIComponent(req.originalUrl)}`); }
 };
 
 const requireAdminKey = (req, res, next) => {
@@ -102,112 +63,109 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(PUBLIC_DIR));
 
-// Make currentUser available to all templates
+// expose current user to templates
 app.use((req, res, next) => {
   const t = req.cookies?.accessToken;
   if (t) {
     try {
       const p = jwt.verify(t, process.env.JWT_ACCESS_SECRET);
       res.locals.currentUser = { id: p.sub, firstName: p.fn, email: p.email };
-    } catch {
-      res.locals.currentUser = null;
-    }
-  } else {
-    res.locals.currentUser = null;
-  }
+    } catch { res.locals.currentUser = null; }
+  } else res.locals.currentUser = null;
   next();
 });
 
 // ---------- Views ----------
 app.get("/", (_req, res) => res.redirect("/signup"));
 app.get("/login", (_req, res) => res.render("login"));
-app.get("/signup", (_req, res) =>
-  res.render("signup", {
-    msg: null,
-    msgType: null,
-    values: { firstName: "", lastName: "", email: "" },
-  })
-);
-
-// Convenience: visiting /auth redirects to /auth/refresh
+app.get("/signup", (_req, res) => res.render("signup", { msg: null, msgType: null, values: { firstName: "", lastName: "", email: "" } }));
 app.get("/auth", (req, res) => {
   const to = typeof req.query.returnTo === "string" ? req.query.returnTo : "/home";
   return res.redirect(`/auth/refresh?returnTo=${encodeURIComponent(to)}`);
 });
-
-// Protected page — load user and pass refreshTokenId for UI (optional)
 app.get("/home", requireAuth, async (req, res) => {
   const me = await User.findById(req.userId).select("firstName refreshTokenId").lean();
-  return res.render("home", {
-    firstName: me?.firstName || "User",
-    sessionId: me?.refreshTokenId || "(none)",
-  });
+  return res.render("home", { firstName: me?.firstName || "User", sessionId: me?.refreshTokenId || "(none)" });
 });
 
 // ---------- Debug / Admin ----------
-
-// Logged-in user's info (shows refreshTokenId)
 app.get("/api/me", requireAuth, async (req, res) => {
-  const me = await User.findById(req.userId)
-    .select("firstName lastName email refreshTokenId")
-    .lean();
+  const me = await User.findById(req.userId).select("firstName lastName email refreshTokenId").lean();
   res.json({ ok: true, user: { id: me._id, ...me } });
 });
 
-// Cookie presence + decoded access token payload
 app.get("/debug/cookies", (req, res) => {
   const access = req.cookies?.accessToken || null;
-
-  // Always reveal payloads in dev; in prod only if ?reveal=1 is passed
-  const revealInProd = ["1", "true", "yes"].includes(String(req.query.reveal || "").toLowerCase());
+  const revealInProd = ["1","true","yes"].includes(String(req.query.reveal || "").toLowerCase());
   const reveal = !isProd || revealInProd;
-
   let accessPayload = null;
-  if (reveal && access) {
-    try {
-      accessPayload = jwt.decode(access, { json: true }) || null; // sub, email, fn, exp
-    } catch (_) {}
-  }
-
-  res.json({
-    hasAccessToken: Boolean(access),
-    hasRefreshToken: Boolean(req.cookies?.refreshToken), // usually false here (path=/auth)
-    refreshCookiePath: "/auth",
-    ...(reveal ? { accessPayload } : {}),
-  });
+  if (reveal && access) { try { accessPayload = jwt.decode(access, { json: true }) || null; } catch {} }
+  res.json({ hasAccessToken: Boolean(access), hasRefreshToken: Boolean(req.cookies?.refreshToken), refreshCookiePath: "/auth", ...(reveal ? { accessPayload } : {}) });
 });
 
-// Refresh cookie is only sent to /auth/*; reveal payload (includes jti)
 app.get("/auth/debug/cookies", (req, res) => {
   const access = req.cookies?.accessToken || null;
   const refresh = req.cookies?.refreshToken || null;
-
-  // Always reveal payloads in dev; in prod only if ?reveal=1 is passed
-  const revealInProd = ["1", "true", "yes"].includes(String(req.query.reveal || "").toLowerCase());
+  const revealInProd = ["1","true","yes"].includes(String(req.query.reveal || "").toLowerCase());
   const reveal = !isProd || revealInProd;
-
   let refreshPayload = null;
-  if (reveal && refresh) {
-    try {
-      refreshPayload = jwt.decode(refresh, { json: true }) || null; // sub, jti, exp
-      // Or verify instead:
-      // refreshPayload = jwt.verify(refresh, process.env.JWT_REFRESH_SECRET);
-    } catch (_) {}
-  }
-
-  res.json({
-    hasAccessToken: Boolean(access),
-    hasRefreshToken: Boolean(refresh),
-    ...(reveal ? { refreshPayload } : {}),
-  });
+  if (reveal && refresh) { try { refreshPayload = jwt.decode(refresh, { json: true }) || null; } catch {} }
+  res.json({ hasAccessToken: Boolean(access), hasRefreshToken: Boolean(refresh), ...(reveal ? { refreshPayload } : {}) });
 });
 
-// Admin list of all users and their refreshTokenId (dev only)
 app.get("/admin/users", requireAdminKey, async (_req, res) => {
-  const users = await User.find({})
-    .select("email firstName lastName refreshTokenId")
-    .lean();
+  const users = await User.find({}).select("email firstName lastName refreshTokenId").lean();
   res.json({ count: users.length, users });
+});
+
+// ---------- Serve item page ----------
+app.get("/item", (_req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "item.html"));
+});
+
+// ---------- API: item by id ----------
+app.get("/api/itemById", async (req, res) => {
+  try {
+    const raw = (req.query.id || "").trim();
+    if (!raw) return res.status(400).json({ error: "Missing id" });
+
+    const collName = process.env.COLLECTION_ITEM_NAME || "items";
+    const db = mongoose.connection?.db;
+    if (!db) return res.status(500).json({ error: "DB not connected" });
+    const coll = db.collection(collName);
+
+    const { ObjectId } = mongoose.Types;
+    const asNum = Number(raw);
+    const candidates = [];
+
+    // match by scraped id (number or string)
+    if (!Number.isNaN(asNum)) candidates.push({ id: asNum });
+    candidates.push({ id: raw });
+
+    // match by Mongo _id if raw looks like an ObjectId
+    if (ObjectId.isValid(raw)) candidates.push({ _id: new ObjectId(raw) });
+
+    const item = await coll.findOne({ $or: candidates });
+    if (!item) return res.status(404).json({ error: "Item not found" });
+
+    // simple similar list (optional)
+    let similarItems = [];
+    try {
+      if (item.name) {
+        const prefix = String(item.name).split(/\s+/).slice(0, 2).join(" ");
+        similarItems = await coll
+          .find({ name: { $regex: `^${prefix}`, $options: "i" }, _id: { $ne: item._id } })
+          .project({ _id: 1, id: 1, name: 1, img_url: 1, price: 1 })
+          .limit(12)
+          .toArray();
+      }
+    } catch {}
+
+    res.json({ item, similarItems });
+  } catch (err) {
+    console.error("GET /api/itemById error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // ---------- Auth: signup/login/refresh/logout ----------
@@ -233,11 +191,7 @@ app.post("/signup", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({
-      firstName, lastName, email, name: email, password: hashedPassword,
-      refreshTokenId: null
-    });
-
+    await User.create({ firstName, lastName, email, name: email, password: hashedPassword, refreshTokenId: null });
     return res.redirect("/login");
   } catch (err) {
     console.error("Signup error:", err);
@@ -250,20 +204,12 @@ app.post("/login", async (req, res) => {
     const email = (req.body.email || req.body.username || "").trim().toLowerCase();
     const user = await User.findOne({ $or: [{ email }, { name: email }] });
     if (!user) {
-      return res.status(404).render("login", {
-        msg: "User not found.",
-        msgType: "error",
-        values: { username: email },
-      });
+      return res.status(404).render("login", { msg: "User not found.", msgType: "error", values: { username: email } });
     }
 
     const isMatch = await bcrypt.compare(req.body.password || "", user.password);
     if (!isMatch) {
-      return res.status(401).render("login", {
-        msg: "Wrong password.",
-        msgType: "error",
-        values: { username: email },
-      });
+      return res.status(401).render("login", { msg: "Wrong password.", msgType: "error", values: { username: email } });
     }
 
     const jti = newJti();
@@ -281,7 +227,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Refresh (GET for SSR redirects)
+// Refresh (GET)
 app.get("/auth/refresh", async (req, res) => {
   try {
     const token = req.cookies?.refreshToken;
@@ -289,9 +235,7 @@ app.get("/auth/refresh", async (req, res) => {
 
     const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const user = await User.findById(payload.sub);
-    if (!user || user.refreshTokenId !== payload.jti) {
-      return res.redirect("/login");
-    }
+    if (!user || user.refreshTokenId !== payload.jti) return res.redirect("/login");
 
     const jti = newJti();
     user.refreshTokenId = jti;
@@ -303,12 +247,10 @@ app.get("/auth/refresh", async (req, res) => {
 
     const nextUrl = req.query.returnTo || "/home";
     return res.redirect(nextUrl);
-  } catch {
-    return res.redirect("/login");
-  }
+  } catch { return res.redirect("/login"); }
 });
 
-// Refresh (POST for XHR/SPA)
+// Refresh (POST)
 app.post("/auth/refresh", async (req, res) => {
   try {
     const token = req.cookies?.refreshToken;
@@ -347,7 +289,6 @@ app.post("/auth/logout", async (req, res) => {
     }
     res.clearCookie("accessToken", { path: "/" });
     res.clearCookie("refreshToken", { path: "/auth" });
-    // also clear dev sid cookie if present
     res.clearCookie("sid", { path: "/" });
     return res.redirect("/login");
   } catch (err) {
@@ -356,7 +297,6 @@ app.post("/auth/logout", async (req, res) => {
   }
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });

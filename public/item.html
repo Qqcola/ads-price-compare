@@ -1,89 +1,99 @@
 <!DOCTYPE html>
-<html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Item Page - ADS</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
-    <link href="/css/item.css" rel="stylesheet" />
-  </head>
-  <body>
-    <nav class="white z-depth-0 ads-nav" role="navigation" data-component="navbar" style="margin-bottom: 20px;">
-      <div class="nav-wrapper container nav-flex">
-        <a href="/" class="brand-logo ads-brand">
-          <span class="brand-badge">ADS</span>
-          <span class="brand-text">Australian Dietary Supplements</span>
-        </a>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Item Page - ADS</title>
 
-        <!-- Mobile menu -->
-        <a href="#" data-target="mobile-nav" class="sidenav-trigger ads-icon">
-          <i class="material-icons">menu</i>
-        </a>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+  <link href="/css/item.css" rel="stylesheet" />
+  <link href="/css/styles.css" rel="stylesheet" />
+</head>
 
-        <!-- Inline search -->
-        <form class="nav-search hide-on-small-only" role="search" aria-label="Product search" id="home-search-form">
-          <div class="input-field">
-            <i class="material-icons prefix ads-icon" id="home-search-go" style="cursor:pointer">search</i>
-            <input id="search-input" class="ads-input" type="text"
-                  placeholder="Search supplements, brands, retailers…" autocomplete="off">
-          </div>
-        </form>
-
-        <!-- Right menu -->
-        <ul class="right hide-on-med-and-down nav-links">
-          <li><a href="/" class="ads-link">Home</a></li>
-          <li><a href="#tips" class="ads-link">Tips</a></li>
-          <li><a href="/chat" class="ads-link">Chatbot</a></li>
-        </ul>
-      </div>
-    </nav>
-    <div class="container">
-      <div class="top">
-        <div class="left-card">
-          <div class="media">
-            <img
-              id="mainImg"
-              src=""
-              alt="product image"
-            />
-          </div>
-          <div class="basic-info">
-            <div id="itemName" class="title">
-            </div>
-            <div id="itemId" class="meta"></div>
-            <div id="itemPrice" class="price">
-              <del id="itemPriceOld" style="font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 8px;"></del>
-            </div>
-            <div id="itemPriceSub" class="price" style="display: None">
-              <del id="itemPriceOldSub" style="font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 8px;"></del>
-            </div>
-            <div id="itemReview" class="review"></div>
-          </div>
-        </div>
-
-        <aside class="accordion-wrap">
-          <div class="accordion" id="accordion">
-        </aside>
-      </div>
-
-      <!-- Similar products -->
-      <section class="similar">
-        <div class="header">
-          <h5 style="margin:0;">Similar Products</h5>
-          <div class="muted"></div>
-        </div>
-        <div class="carousel">
-          <button class="btn-slide btn-left" aria-label="previous">◀</button>
-          <div class="viewport" id="viewport">
-            <div class="track" id="track"></div>
-          </div>
-          <button class="btn-slide btn-right" aria-label="next">▶</button>
-        </div>
-      </section>
+<body class="item-page ads-bg">
+  <!-- Top nav -->
+  <nav class="white z-depth-0 ads-nav" role="navigation" style="margin-bottom: 20px;">
+    <div class="nav-wrapper container nav-flex">
+      <a href="/" class="brand-logo ads-brand">
+        <span class="brand-badge">ADS</span>
+        <span class="brand-text">Australian Dietary Supplements</span>
+      </a>
+      <ul class="right hide-on-med-and-down nav-links">
+        <li><a href="/" class="ads-link">Home</a></li>
+        <li><a href="#tips" class="ads-link">Tips</a></li>
+        <li><a href="/chat" class="ads-link">Chatbot</a></li>
+        <li><a href="/list.html" class="ads-link"><i class="material-icons left">favorite</i>My List</a></li>
+      </ul>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="/js/item.js"></script>
-  </body>
+  </nav>
+
+  <!-- On-page search -->
+  <section class="section search-wrap" style="padding-top:0;">
+    <div class="container">
+      <div class="card white" style="margin-bottom:16px;">
+        <div class="card-content">
+          <form id="page-search-form" class="page-search" role="search" aria-label="Search">
+            <div class="input-field">
+              <i id="page-search-go" class="material-icons prefix" style="cursor:pointer;">search</i>
+              <input id="page-search-input" type="text"
+                     placeholder="Search supplements, brands, retailers…" autocomplete="off" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page content -->
+  <div class="container">
+    <div class="top">
+      <div class="left-card">
+        <div class="media">
+          <img id="mainImg" src="" alt="product image" referrerpolicy="no-referrer"/>
+        </div>
+        <div class="basic-info">
+          <div id="itemName" class="title"></div>
+          <!-- no product ID line -->
+          <div id="itemPrice" class="price">
+            <small id="itemPriceOld" style="font-size:12px;color:var(--muted);font-weight:600;margin-left:8px;"></small>
+          </div>
+          <div id="itemReview" class="review"></div>
+        </div>
+
+        <div class="btn-row">
+          <!-- ORANGE save (heart) -->
+          <a id="save-btn" href="#!" class="btn-flat waves-effect ads-action-link">
+            <i class="material-icons left">favorite</i>Save
+          </a>
+        </div>
+
+        <div class="retailer-list" id="retailerList"></div>
+      </div>
+
+      <aside class="accordion-wrap">
+        <div class="accordion" id="accordion"></div>
+      </aside>
+    </div>
+
+    <!-- Similar products -->
+    <section class="similar">
+      <div class="header">
+        <h5 style="margin:0;">Similar Products</h5>
+        <div class="muted"></div>
+      </div>
+      <div class="carousel">
+        <button class="btn-slide btn-left" aria-label="previous">◀</button>
+        <div class="viewport" id="viewport">
+          <div class="track" id="track"></div>
+        </div>
+        <button class="btn-slide btn-right" aria-label="next">▶</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="/js/favs.js"></script>
+  <script src="/js/item.js"></script>
+</body>
 </html>
