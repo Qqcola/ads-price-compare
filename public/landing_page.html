@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ADS • Home</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="css/login_signup.css"/>
+</head>
+<body class="home">
+  <!-- Background (home-only image via CSS) -->
+  <div class="bg-container"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Topbar -->
+  <nav class="topbar transparent z-depth-0">
+    <div class="container topbar-inner">
+      <span></span>
+      <ul class="actions">
+        <li><a class="btn-pill btn-ghost" href="login.html">Sign In</a></li>
+        <li><a class="btn-pill btn-ghost" href="signup.html">Sign Up</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="home-main">
+    <!-- 1) OUTSIDE THE CONTAINER: Title + Typing animation (white text) -->
+    <section class="hero-intro animate-fade-up">
+      <h1 class="title title-white">Welcome to Australian Dietary Supplements (ADS)</h1>
+
+      <p class="subtitle subtitle-white hero-sub fixed-line">
+        <span id="rotator">
+          <span id="rotator-text"></span><span class="cursor">|</span>
+        </span>
+      </p>
+    </section>
+
+    <!-- 2) INSIDE THE CONTAINER: About ADS only -->
+    <section class="about-box animate-fade-up delay-1">
+      <h2>About ADS</h2>
+      <p><strong>Australian Dietary Supplements (ADS)</strong> helps you make informed choices about vitamins, supplements, and over-the-counter products. ADS brings key product info into one place so you can save time and money.</p>
+      <p>Our price comparison fetches data from leading Australian retailers. Browse products, check details and ratings, and quickly spot value. You can also save favourites and track prices over time.</p>
+      <p>Need quick guidance? ADS presents simple, helpful information to support smarter decisions. (Always remember: this is not a substitute for professional medical advice.) With a clean interface and mobile-friendly design, ADS aims to be a trustworthy companion for health product research.</p>
+    </section>
+
+    <!-- 3) OUTSIDE THE CONTAINER: Feature tiles -->
+    <section class="features-wrap">
+      <div class="hero-features">
+        <div class="feature animate-fade-up delay-1">
+          <span class="material-icons">price_check</span>
+          <h3>Price Compare</h3>
+          <p>See the best deals instantly for vitamins and supplements.</p>
+        </div>
+        <div class="feature animate-fade-up delay-2">
+          <span class="material-icons">chat_bubble</span>
+          <h3>Simple Guidance</h3>
+          <p>Quick, easy-to-read info so you can choose with confidence.</p>
+        </div>
+        <div class="feature animate-fade-up delay-3">
+          <span class="material-icons">favorite_border</span>
+          <h3>Favourites</h3>
+          <p>Save items, track prices, and shop when it’s right.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Typing/rotating subtitle -->
+  <script>
+    (function(){
+      const phrases = [
+        "Compare prices across stores",
+        "Save favourites",
+        "Get quick, clear answers"
+      ];
+      const el = document.getElementById("rotator-text");
+      const cursor = document.querySelector(".cursor");
+
+      let p = 0, i = 0, deleting = false;
+      const typeSpeed = 55, deleteSpeed = 36, holdAfterType = 1200, holdAfterDelete = 300;
+
+      function step(){
+        const text = phrases[p];
+        if (!deleting){
+          el.textContent = text.slice(0, ++i);
+          if (i === text.length){ deleting = true; return setTimeout(step, holdAfterType); }
+          return setTimeout(step, typeSpeed);
+        } else {
+          el.textContent = text.slice(0, --i);
+          if (i === 0){ deleting = false; p = (p + 1) % phrases.length; return setTimeout(step, holdAfterDelete); }
+          return setTimeout(step, deleteSpeed);
+        }
+      }
+      // blink cursor
+      setInterval(() => cursor.classList.toggle("hidden"), 450);
+      step();
+    })();
+  </script>
+</body>
+</html>
+

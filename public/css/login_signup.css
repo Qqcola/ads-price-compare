@@ -1,0 +1,276 @@
+:root{
+  --brand:#1565c0;
+  --brand-2:#2196f3;
+  --ink:#263259;
+  --ink-2:#334155;
+  --card-bg:rgba(255,255,255,0.94);
+  --blur-bg:4px;
+  --radius-xl:40px;
+}
+
+*{ box-sizing:border-box; }
+html,body{
+  height:100%;
+  margin:0;
+  font-family:'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--ink);
+  overflow-x:hidden;
+}
+
+/* ================= Background ================= */
+.bg-container{
+  position:fixed; inset:0;
+  background:url("../images/Dietery_Image1.png") center/cover no-repeat;
+  filter:blur(var(--blur-bg)) brightness(0.9);
+  z-index:-2;
+}
+.bg-overlay{
+  position:fixed; inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.25) 100%);
+  z-index:-1;
+}
+
+/* ================= Topbar ================= */
+.topbar .topbar-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 0;
+}
+.brand{
+  font-family:'Montserrat', sans-serif;
+  font-size:2rem; font-weight:700; letter-spacing:.01em;
+}
+.actions{ list-style:none; margin:0; padding:0; display:flex; gap:14px; }
+.btn-pill{
+  display:inline-flex; align-items:center; justify-content:center;
+  height:42px; padding:0 18px; border-radius:9999px;
+  text-decoration:none; font-weight:600; letter-spacing:.02em;
+}
+.btn-ghost{ color:#fff; border:2px solid #fff; background:transparent; }
+.btn-ghost:hover{ background:rgba(255,255,255,.08); }
+
+/* ================= Layout ================= */
+.form-center{
+  min-height:calc(100vh - 80px);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px 16px;
+}
+
+/* Optional left-aligned variant (login, if used) */
+.left-layout .form-center{ justify-content:flex-start; }
+.left-layout .card-glass{
+  margin-left:clamp(24px, 8vw, 140px);
+  width:min(940px, 56vw);
+}
+
+/* ================= Card (used by auth pages) ================= */
+.card-glass{
+  width:min(940px, 94vw);
+  background:var(--card-bg);
+  border-radius:var(--radius-xl);
+  box-shadow:0 8px 32px rgba(30,41,59,.18);
+  padding:48px 56px 40px;
+  backdrop-filter:saturate(1.1);
+  text-align:center;
+}
+.card-glass.signup-centered{
+  width:min(760px, 92vw);
+  border-radius:32px;
+  padding:36px 40px 30px;
+}
+
+/* ================= Headings ================= */
+.title{
+  font-family:'Montserrat', sans-serif;
+  font-weight:700;
+  font-size:2.4rem;
+  line-height:1.2;
+  color:#1565C0;
+  letter-spacing:.02em;
+  margin:0 0 18px 0;
+}
+.subtitle{
+  font-family:'Poppins', sans-serif;
+  font-weight:400;
+  font-size:1.10rem;
+  color:#263259;
+  margin:0 0 30px 0;
+}
+.subtitle a{ color:#1565C0; text-decoration:none; font-weight:600; }
+.subtitle a:hover{ text-decoration:underline; }
+
+/* helpers for alternate colors */
+.title-black{ color:#000 !important; }
+.subtitle-black{ color:#000 !important; }
+.subtitle-blue{ color:#1565C0 !important; font-weight:700 !important; text-decoration:none !important; }
+.subtitle-blue:hover{ text-decoration:underline !important; }
+
+/* ================= Forms (auth pages) ================= */
+.form{ margin-inline:auto; width:100%; max-width:620px; display:grid; gap:18px; }
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:700px){ .grid-2{ grid-template-columns:1fr; } }
+
+.pill-input{
+  display:flex; align-items:center; gap:10px;
+  height:56px; border-radius:9999px;
+  background:#f1f5f9; border:1px solid #e5e7eb;
+  padding:12px 16px 12px 14px; width:100%;
+}
+.pill-input:focus-within{ border-color:#9ac9ff; box-shadow:0 0 0 4px rgba(33,150,243,.12); background:#eef7ff; }
+.pill-input input{
+  appearance:none; border:none; outline:none; min-width:0;
+  background:transparent; flex:1; font-size:1rem; color:var(--ink-2); padding:6px 2px;
+}
+.icon-left{ color:#6b7a90; }
+.icon-button{ border:none; background:transparent; cursor:pointer; padding:2px; display:inline-flex; align-items:center; justify-content:center; }
+.icon-button .material-icons{ color:#6b7a90; }
+
+/* Buttons */
+.btn-primary{
+  width:100%; height:58px; border:none; border-radius:9999px;
+  background:linear-gradient(90deg,#1565C0 0%,#2196F3 100%);
+  color:#fff; font-weight:700; font-family:'Montserrat', sans-serif;
+  letter-spacing:.06em; font-size:1.15rem; cursor:pointer;
+  box-shadow:0 12px 28px rgba(33,150,243,.20);
+  transition:transform .12s, box-shadow .12s, filter .12s;
+}
+.btn-primary:hover{ transform:translateY(-1px) scale(1.02); box-shadow:0 16px 36px rgba(33,150,243,.24); }
+.btn-primary:active{ transform:translateY(0); filter:saturate(.96); }
+
+.btn-white{
+  background:#ffffff !important; color:#000 !important; border:1px solid #e5e7eb !important;
+  box-shadow:0 6px 18px rgba(30,41,59,.10) !important;
+}
+.btn-white:hover{ transform:translateY(-1px) !important; box-shadow:0 10px 24px rgba(30,41,59,.16) !important; }
+
+.error-text{ color:#d32f2f; margin-top:6px; }
+
+/* Responsive (auth cards) */
+@media (max-width:900px){
+  .brand{ font-size:1.5rem; }
+  .card-glass{ padding:22px 18px 24px; }
+  .title{ font-size:1.8rem; }
+  .subtitle{ font-size:1rem; }
+  .card-glass.signup-centered{ width:min(94vw, 640px); padding:26px 18px; }
+}
+
+/* Top-right buttons */
+.topbar .actions .btn-pill{ border-radius:9999px; }
+
+/* ================= HOME LAYOUT ================= */
+
+/* Home-only background image */
+.home .bg-container{
+  background:url("../images/Dietery_Image_home.png") center/cover no-repeat;
+}
+
+.home .topbar .actions .btn-pill{
+  color:#fff !important;
+  border:2px solid #fff;
+  background:transparent;
+}
+
+/* Home main stack */
+.home-main{
+  padding:56px 16px 36px;
+  display:flex; flex-direction:column; align-items:center; gap:18px;
+}
+
+/* Hero intro (outside the container) */
+.hero-intro{ text-align:center; max-width:1100px; }
+.title-white{ color:#fff !important; }
+.subtitle-white{ color:#fff !important; }
+
+.hero-sub.fixed-line{
+  height:1.75em;
+  display:flex; align-items:center; justify-content:center;
+}
+#rotator{ display:inline-flex; align-items:center; gap:2px; }
+#rotator-text{ white-space:nowrap; }
+.cursor{ display:inline-block; width:1ch; margin-left:1px; opacity:1; transition:opacity .15s linear; }
+.cursor.hidden{ opacity:0; }
+.hero-sub{ font-size:1.12rem; }
+
+/* About box */
+.about-box{
+  width:min(1040px, 94vw);
+  background:#fff; border-radius:32px; border:1px solid #eef2f7;
+  box-shadow:0 10px 26px rgba(15,23,42,.10);
+  padding:26px 28px; text-align:left;
+}
+.about-box h2{
+  margin:0 0 8px;
+  font-family:'Montserrat', sans-serif; font-weight:700; font-size:1.35rem; color:#0f172a;
+}
+.about-box p{ margin:10px 0; color:#334155; line-height:1.75; font-size:1rem; }
+
+/* Feature tiles (outside the container) */
+.features-wrap{ width:100%; display:flex; justify-content:center; }
+.hero-features{
+  width:min(1040px, 94vw);
+  display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:8px;
+}
+.feature{
+  background:#ffffff; border:1px solid #eef2f7; border-radius:18px;
+  padding:16px 14px; box-shadow:0 6px 16px rgba(30,41,59,.06);
+}
+.feature h3{
+  margin:8px 0 6px; font-family:'Montserrat', sans-serif; font-weight:700; font-size:1.05rem; color:#0f172a;
+}
+.feature p{ margin:0; color:#334155; font-size:.98rem; }
+.feature .material-icons{ font-size:26px; color:#1565C0; }
+
+/* ---- Simple on-load animations ---- */
+@keyframes fadeUp{
+  from{ opacity:0; transform:translateY(16px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+.animate-fade-up{ opacity:0; animation: fadeUp .55s ease-out both; }
+.delay-1{ animation-delay:.10s !important; }
+.delay-2{ animation-delay:.20s !important; }
+.delay-3{ animation-delay:.30s !important; }
+@media (prefers-reduced-motion:reduce){
+  .animate-fade-up{ animation:none; opacity:1; transform:none; }
+}
+
+/* Responsive (home) */
+@media (max-width:900px){
+  .hero-features{ grid-template-columns:1fr; }
+  .about-box{ padding:18px 16px; }
+}
+
+/* error/info banner (used by signup + login) */
+.hidden { display: none; }
+
+.alert{
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+.alert--error{
+  background: #e57373; 
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(229,115,115,.28);
+}
+
+/* --- error banner used on login & signup --- */
+.alert{
+  display:none;
+  background:#e57373;
+  color:#fff;
+  font-weight:700;
+  text-align:center;
+  margin:-4px auto 16px;
+  padding:14px 18px;
+  border-radius:12px;
+}
+.alert.show{ display:block; }
+
+/* --- bottom-right panel heading as cookies--- */
+.hud h3{
+  margin:0 0 12px 0;
+  font-family:'Montserrat',sans-serif;
+  font-weight:700;
+  font-size:1.05rem;
+}

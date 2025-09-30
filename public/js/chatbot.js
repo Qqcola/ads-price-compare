@@ -1,3 +1,4 @@
+
 const fallbackData = [
   {
     id: "c1",
@@ -31,22 +32,26 @@ let conversations = null;
 let currentId = null; // when null => show home
 let addNewChat = false;
 
-const userid = "check";
-const socket = io();
+//  filled from /api/me
+let me = { fullName: "Guest", email: null, jti: null };
+let userid = null;
+
+// declare socket variable; we’ll initialize it after fetching user
+let socket = null;
 
 // --- Backend fetch helper: GET /api/conversations/:id ---
 async function fetchConversationFromServer() {
   try {
+    // ensure we have a userid
+    const uid = userid || me.email || me.jti || "guest";
     const res = await fetch(`/api/findConversationByUser`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({'user_id': userid}),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 'user_id': uid }),
+      credentials: 'include' 
     });
     if (!res.ok) throw new Error("Network response not ok");
     const json = await res.json();
-    // console.log(json[0])
     return json;
   } catch (err) {
     console.warn("Fetch conv fail", err);
@@ -58,10 +63,9 @@ async function deleteConversation(cid) {
   try {
     const res = await fetch(`/api/deleteConversationById`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({'id': cid}),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 'id': cid }),
+      credentials: 'include' 
     });
     if (!res.ok){
       console.log("Network response not ok");
@@ -76,6 +80,7 @@ async function deleteConversation(cid) {
     console.warn("Delete conv fail", err);
   }
 }
+
 function renderList() {
   convContainer.innerHTML = "";
   conversations.forEach((c) => {
@@ -148,7 +153,6 @@ function renderMessages(conv) {
   chatArea.innerHTML = "";
   if (!conv || !conv.history) return;
   conv.history.forEach((m) => {
-    // console.log(m[0] == "BOT")
     const mEl = document.createElement("div");
     mEl.className =
       "message" + (m[0] == "USER" ? " me" : "");
@@ -228,17 +232,12 @@ homeSend.addEventListener("click", () => {
   const text = homeInput.value.trim();
   if (!text) return;
   const conv = createConversation(text);
-  // clear home input and switch to chat
   homeInput.value = "";
-  // select new conv and show (push state)
   selectConversation(conv.id, true);
-  // focus chat input for follow-ups
   setTimeout(() => chatInput.focus(), 120);
-  const params = {'text': text, 'history': []}
+  const params = { text, history: [] };
+  // socket is created in init(); this handler runs later
   socket.emit("message_chatbot", params);
-
-  // Optionally: POST to backend to persist the new conversation
-  // fetch('/api/conversations', {method:'POST', body: JSON.stringify(conv), headers:{'Content-Type':'application/json'}})
 });
 
 // handle send in chat view (append message to existing conversation)
@@ -248,11 +247,9 @@ chatSend.addEventListener("click", () => {
   const conv = conversations.find((c) => c.id === currentId);
   if (!conv) return;
   const now = new Date().toLocaleString();
-  const params = {'text': text, 'history': conv.history}
+  const params = { text, history: conv.history };
   conv.history.push(["USER", text]);
-  // conv.name = text;
   conv.edit_time = now;
-  // update list preview and messages
   conversations = conversations.filter(c => c.id != currentId);
   conversations.unshift(conv);
   renderList();
@@ -260,76 +257,9 @@ chatSend.addEventListener("click", () => {
   chatInput.value = "";
   chatInput.focus();
   socket.emit("message_chatbot", params);
-
-  // Optionally: send to backend to persist message
-  // fetch(`/api/conversations/${encodeURIComponent(currentId)}/messages`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})
 });
 
-socket.on("chunk_response", ({ process_chunk }) => {
-  let conv = conversations.find((c) => c.id === currentId);
-  if (!conv) {
-    const newConv = createConversation("");
-    currentId = newConv.id;
-    conv = newConv;
-    homeView.style.display = "none";
-    chatShell.style.display = "flex";
-    chatTitle.textContent = conv.name;
-    chatSubtitle.textContent = conv.time || "";
-    updateSelectedInList();
-  }
-  const lastIdx = conv.history.length - 1;
-  let lastMsg = conv.history[lastIdx];
-
-  const now = new Date().toLocaleString();
-  console.log(process_chunk);
-  if(lastMsg[0] != 'BOT'){
-    const assistantMsg = ["BOT", process_chunk || ""];
-    conv.history.push(assistantMsg);
-    lastMsg = assistantMsg;
-  }
-  else{
-    lastMsg[1] = (lastMsg[1] || "") + (process_chunk || "");
-  }
-  conv.edit_time = now
-  renderList();
-  renderMessages(conv);
-});
-
-socket.on("done", async () => {
-  console.log("stream done");
-  let conv = conversations.find((c) => c.id === currentId);
-  const lastIdx = conv.history.length - 1;
-  if(addNewChat){
-    const convPush = {id: conv.id, user_id: userid, edit_time: conv.edit_time, name: conv.name,
-                      user_text: conv.history[lastIdx - 1][1], bot_text: conv.history[lastIdx][1]}
-    const response = await fetch('/api/pushConversation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(convPush),
-    });
-    if(response.status != 200){
-      console.log(`Push error: ${response.status}`)
-    }
-  }
-  else{
-    const convUpdate = {id: conv.id, user_text: conv.history[lastIdx - 1][1], bot_text: conv.history[lastIdx][1], edit_time: conv.edit_time}
-    const response = await fetch('/api/updateConversation', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(convUpdate),
-    });
-    if(response.status != 200){
-      console.log(`Update error: ${response.status}`)
-    }
-  }
-  addNewChat = false;
-});
-
-socket.on("error", (e) => console.error("err", e));
+// All socket listeners will be attached after we open the socket in init()
 
 newChatBtn.addEventListener("click", () => {
   goHome();
@@ -343,16 +273,109 @@ window.addEventListener("popstate", (e) => {
 });
 
 (async function init() {
-  // load all conversations
+  // 1) Identify the user (server reads HttpOnly cookie)
+  try {
+    const res = await fetch('/api/me', { credentials: 'include' });
+    const data = await res.json().catch(() => ({}));
+    console.log(data.user)
+    if (res.ok && data.ok && data.user) {
+      me = data.user;                     // { fullName, email, jti }
+      userid = me.email || me.jti || 'guest';
+    } else {
+      userid = 'guest';
+    }
+  } catch {
+    userid = 'guest';
+  }
+
+  // 2) Open the socket AFTER we know who the user is
+  socket = io({
+    auth: { name: me.fullName || 'Guest', email: me.email || null, jti: me.jti || null }
+    // cookies (with the JWT) are sent automatically by the browser
+  });
+
+  // 3) Attach socket listeners
+  socket.on("chunk_response", ({ process_chunk }) => {
+    let conv = conversations.find((c) => c.id === currentId);
+    if (!conv) {
+      const newConv = createConversation("");
+      currentId = newConv.id;
+      conv = newConv;
+      homeView.style.display = "none";
+      chatShell.style.display = "flex";
+      chatTitle.textContent = conv.name;
+      chatSubtitle.textContent = conv.time || "";
+      updateSelectedInList();
+    }
+    const lastIdx = conv.history.length - 1;
+    let lastMsg = conv.history[lastIdx];
+
+    const now = new Date().toLocaleString();
+    if (!lastMsg || lastMsg[0] !== 'BOT') {
+      const assistantMsg = ["BOT", process_chunk || ""];
+      conv.history.push(assistantMsg);
+      lastMsg = assistantMsg;
+    } else {
+      lastMsg[1] = (lastMsg[1] || "") + (process_chunk || "");
+    }
+    conv.edit_time = now;
+    renderList();
+    renderMessages(conv);
+  });
+
+  socket.on("done", async () => {
+    let conv = conversations.find((c) => c.id === currentId);
+    if (!conv) return;
+    const lastIdx = conv.history.length - 1;
+
+    if (addNewChat) {
+      const convPush = {
+        id: conv.id,
+        user_id: userid, 
+        edit_time: conv.edit_time,
+        name: conv.name,
+        user_text: conv.history[lastIdx - 1][1],
+        bot_text: conv.history[lastIdx][1]
+      };
+      const response = await fetch('/api/pushConversation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(convPush),
+        credentials: 'include' 
+      });
+      if (response.status != 200) {
+        console.log(`Push error: ${response.status}`);
+      }
+    } else {
+      const convUpdate = {
+        id: conv.id,
+        user_text: conv.history[lastIdx - 1][1],
+        bot_text: conv.history[lastIdx][1],
+        edit_time: conv.edit_time
+      };
+      const response = await fetch('/api/updateConversation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(convUpdate),
+        credentials: 'include' 
+      });
+      if (response.status != 200) {
+        console.log(`Update error: ${response.status}`);
+      }
+    }
+    addNewChat = false;
+  });
+
+  socket.on("error", (e) => console.error("err", e));
+
+  //  4) Load conversations and route
   conversations = await fetchConversationFromServer();
   renderList();
+
   const urlId = idFromUrl();
-  console.log("Log: ", urlId);
   if (urlId) {
-    // try load from local first; selectConversation will fetch from server if not found
     await selectConversation(urlId, false);
   } else {
-    // show home by default
     goHome(false);
   }
 })();
@@ -367,3 +390,4 @@ window.addEventListener("popstate", (e) => {
     }
   });
 });
+
