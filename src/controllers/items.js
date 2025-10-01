@@ -52,19 +52,18 @@ exports.itemsSearchById = async (req, res) => {
       return res.status(404).json({ message: "Cannot find this item" });
     }
     if (!item.brand) return res.status(200).json({ item: item, similarItems: [] });
-    let similarItems = await Items.find({brand: item.brand, id: { $ne: item.id }}).exec();
-    similarItems = similarItems.map((similarItem) => {
-      const originalCategories = item.categories || [];
-      const similarCategories = similarItem.categories || [];
-      const commonCategories = originalCategories.filter((category) =>
-        similarCategories.includes(category)
-      );
-      const similarItemObj = similarItem.toObject();
-      similarItemObj.categoryMatchScore = commonCategories.length;
-      return similarItemObj;
-    });
-    similarItems.sort((a, b) => b.categoryMatchScore - a.categoryMatchScore);
-    // console.log(item);
+    const originalCategories = Array.isArray(item.categories) ? item.categories : [];
+    // console.log(originalCategories);
+    const similarItems = await Items.aggregate([
+      { $match: { id: { $ne: item.id } } },
+      { $addFields: {
+          categoryMatchScore: { $size: { $setIntersection: ["$categories", originalCategories] } },
+          brandMatch: { $cond: [{ $eq: ["$brand", item.brand] }, 1, 0] }
+        }
+      },
+      { $sort: { categoryMatchScore: -1, brandMatch: -1 } },
+      { $limit: 15 }
+    ]).exec();  
     res.status(200).json({item: item, similarItems: similarItems });
   } catch (e) {
     console.log(e);
