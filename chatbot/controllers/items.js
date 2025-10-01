@@ -23,7 +23,7 @@ async function itemsRag(userText, limit = 5) {
     ];
 
     const results = await Items.aggregate(pipeline);
-    console.log(results)
+    // console.log(results)
     return results;
   } catch (err) {
     console.error(err);
@@ -63,12 +63,14 @@ export const inference = async (req, res) => {
     }
 
     if (!conversationHistory) conversationHistory = [];
-    let historyPrompt = "";
+    var historyPrompt = "";
     if (conversationHistory.length != 0) {
-      for (let mess in conversationHistory) {
+      for (let i= 0; i < conversationHistory.length; i++) {
+        let mess = conversationHistory[i];
         historyPrompt += `${mess[0]}: ${mess[1]}\n`;
       }
     }
+    // console.log("Check", historyPrompt)
     const intent = await intentClassification(userText, historyPrompt);
     var context = "";
     // console.log(intent)
@@ -84,7 +86,6 @@ export const inference = async (req, res) => {
         context += `\n`;
       }
     }
-    console.log(context)
     for (let i = 0; i < inference_models.length; i++) {
       try {
         let streamingResult = await inference_models[i].models.generateContentStream({
