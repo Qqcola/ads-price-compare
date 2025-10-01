@@ -23,7 +23,7 @@ async function itemsRag(userText, limit = 5) {
     ];
 
     const results = await Items.aggregate(pipeline);
-    // console.log(results)
+    console.log(results)
     return results;
   } catch (err) {
     console.error(err);
