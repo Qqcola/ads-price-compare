@@ -109,22 +109,25 @@ Optional – Chatbot service: If your branch includes the chatbot microservice, 
 Copy from .env.example then adjust as needed:
 
 ```bash
-# Server
-PORT=3000
-
-# MongoDB
+# MongoDB credentials
 MONGODB_ROOT_USER=admin
-MONGODB_ROOT_PASSWORD=your-root-password
-MONGODB_APP_USER=appuser
-MONGODB_APP_PASSWORD=apppassword
-MONGODB_HOST=localhost
-MONGODB_PORT=27017
+MONGODB_ROOT_PASSWORD=sit725groupproject
+MONGODB_APP_USER=sit725
+MONGODB_APP_PASSWORD=sit725groupproject
 
-# DB & Collections
+# MongoDB connection (host/port)
+MONGODB_HOST=localhost
+MONGODB_PORT=20725
+
+# Database & collections
 DB_NAME=SIT725GP
 COLLECTION_ITEM_NAME=items
 COLLECTION_ITEM_LI_NAME=items_li
-COLLECTION_CHAT_NAME=chat
+COLLECTION_CHAT_NAME=conversations
+
+# Google GenAI
+API_KEYS="AIzaSyAsvzeraBjVll28lh_8xVBDXaIxK2DxcC0, AIzaSyAEbenbT57mwmcjGwddmYV-NFN3hSdHzYY, AIzaSyC-ovgaE-ifQKLgA9x_SONBaaBbxdWXbsQ, AIzaSyAF9XaI0nlEArEZh6XUqSDSzDa2DLV4x3I, AIzaSyD7ca_k4S0xuLtPvGDj4-BFp9r9rganoRw, AIzaSyCmxYhzPZ7At1xAzeC7bGAUzCNkosRy7DM, AIzaSyADLS_avoX1SegVxSSOo-JgkhDED___5jk, AIzaSyC8CC4MN-1TCiSFCdAsPZDLWZn-J-jRGv0, AIzaSyC3mGG_9l1BgLIWAuBz1fYiiTEpwmqsZGI"
+MODEL_NAME="gemini-2.0-flash"
 ```
 
 Ensure these match the credentials in docker-compose.yml.
