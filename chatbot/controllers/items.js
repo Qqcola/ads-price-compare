@@ -13,10 +13,14 @@ const inference_models = list_api_key.slice(0, split_index).map((key) => new Goo
 const intent_models = list_api_key.slice(split_index).map((key) => new GoogleGenAI({ apiKey: key }));
 const model_name = process.env.MODEL_NAME;
 
-async function itemsRag(userText, limit = 5) {
+async function itemsRag(listBrand, userText, limit = 5) {
   try {
+    const match = { $text: { $search: userText } };
+    if (Array.isArray(listBrand) && listBrand.length > 0) {
+      match.brand = { $in: listBrand };
+    }
     const pipeline = [
-      { $match: { $text: { $search: userText } } },
+      { $match: match },
       { $addFields: { score: { $meta: "textScore" } } },
       { $sort: { score: -1 } },
       { $limit: limit },
@@ -41,12 +45,16 @@ async function intentClassification(userText, historyPrompt) {
         contents: prompt,
       });
       console.log(intent.text);
-      return intent.text.match(/\*\*Decision\*\*:\s*\*([^*]+)\*/)[1] == "Yes" ? 1 : 0;
+      let res = {
+        "intent": intent.text.match(/\*\*Decision\*\*:\s*\*([^*]+)\*/)[1] == "Yes" ? 1 : 0,
+        "brand": JSON.parse(intent.text.match(/\*\*Brand\*\*:\s*\*([^*]+)\*/)[1].replace(/'/g, '"'))
+      };
+      return res;
     } catch (err) {
       console.error(err);
     }
   }
-  return 0;
+  return {'intent': 0, 'brand': []};
 }
 
 export const inference = async (req, res) => {
@@ -71,11 +79,13 @@ export const inference = async (req, res) => {
       }
     }
     // console.log("Check", historyPrompt)
-    const intent = await intentClassification(userText, historyPrompt);
+    const res_intent = await intentClassification(userText, historyPrompt);
+    const intent = res_intent['intent'];
+    const brand = res_intent['brand'];
+    console.log(brand);
     var context = "";
-    // console.log(intent)
     if (intent == 1) {
-      const list_items = await itemsRag(userText);
+      const list_items = await itemsRag(brand, userText);
       for (let i = 0; i < list_items.length; i++){
         let it = list_items[i];
         let price_cm = 'price' in it ? it['price']['chemist_warehouse'] : 'None';
