@@ -241,3 +241,4 @@ Ensure Node version matches your team’s baseline, reinstall deps (rm -rf node_
 ## ✅ What this README gives you
 
 Quickstart, .env.example setup, contributor context, Docker notes, npm test instructions, and enough architecture detail that any teammate can clone → configure → run → contribute quickly.
+
