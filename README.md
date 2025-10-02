@@ -174,6 +174,7 @@ My List operates via the app’s authenticated/session flow with per-user list a
 
 ## 📂 Project Structure
 
+```
 ads-price-compare/
 ├── chatbot/
 ├── data_process/
@@ -192,6 +193,7 @@ ads-price-compare/
 ├── package-lock.json
 ├── package.json
 └── README.md
+```
 
 ---
 
