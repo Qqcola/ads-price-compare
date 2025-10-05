@@ -1,4 +1,4 @@
-name: CI pipeline - Test, Build and Push Backend/frontend Images to ACR
+name: CI pipeline
 
 on:
   workflow_dispatch:
