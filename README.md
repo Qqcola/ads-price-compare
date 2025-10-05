@@ -160,11 +160,12 @@ File: reviews.test.js
 Title truncation: safe single-ellipsis truncation within limits, preferring space breaks.
 File: truncate.test.js
 
-Data connection: Check connection to database and test some simple queries
+Data connection: Check connection to database and test some simple queries.
 File: database.test.js
 
-Item APIs: Check out some APIs that interact with collections 'Items'
+Item APIs: Check out some APIs that interact with collections 'Items'.
 File: itemsAPI.test.js
+
 ---
 
 ## 🔌 API (dev endpoints)
