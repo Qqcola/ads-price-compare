@@ -52,5 +52,5 @@ jobs:
       
       - name: Test data push into the MongoDB server
         run: |
-          docker exec -i mongo_db /bin/bash 
+          docker exec -i mongo_db /bin/sh
           mongosh "mongodb://sit725:sit725groupproject@localhost:20725/SIT725GP" --eval "if (db.getCollectionInfos({ name: 'check' }).length > 0) { console.log('Collection found'); quit(0); } else { console.log('Collection NOT found.'); quit(1); }"
