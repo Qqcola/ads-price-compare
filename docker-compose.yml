@@ -57,7 +57,7 @@ services:
       CHAT_SERVICE_URL: "http://chatbot_service:${CHATSERVICE_PORT}"
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      DEPLOYMENT_ENV: dev
+      DEPLOYMENT_ENV: ${DEPLOYMENT_ENV}
     restart: unless-stopped
     depends_on:
       - chatbot_service

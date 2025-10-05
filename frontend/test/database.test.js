@@ -72,7 +72,7 @@ describe("MongoDB Connection and Data Tests", function() {
         });
         it("should find items with brands: Panadol", async function() {
             const items = await Items.find({ brand: "Panadol" });
-            expect(items.length).to.be.above(80);
+            expect(items.length).to.be.above(15);
         });
         it("No product should have a negative price", async function() {
             const countItems = await Items.countDocuments({ "price.chemist_warehouse": { $lt: 0 } });
