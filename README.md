@@ -98,7 +98,7 @@ Once the building images and running containers via the docker-compose command a
 
 ### 🔐 Environment Variables
 
-Copy from .env.example then adjust as needed:
+IMPORTANT - Create an .env file in the root folder (Copy from .env.example then adjust as needed):
 
 ```bash
 # MongoDB credentials
