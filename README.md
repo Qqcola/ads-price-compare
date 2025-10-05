@@ -27,8 +27,8 @@ Built with **Node.js/Express (MVC)**, **MongoDB (Docker)**, and **Materialize CS
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Node.js, Express, Mongoose
-- **Frontend**: Materialize CSS, Vanilla JS
+- **Backend**: Node.js, Express, Mongoose, Socket.IO, GoogleAPI
+- **Frontend**: HTML, Materialize CSS, Vanilla JS
 - **Database**: MongoDB (Docker)
 - **Testing**: Mocha, Chai
 - **Other**: dotenv, morgan, cors
@@ -41,7 +41,6 @@ Built with **Node.js/Express (MVC)**, **MongoDB (Docker)**, and **Materialize CS
 ```bash
 git clone https://github.com/Qqcola/ads-price-compare.git
 cd ads-price-compare
-npm install
 ```
 
 ---
@@ -55,16 +54,16 @@ Open .env and set values (see full list below). At minimum, confirm Mongo creden
 
 ---
 
-### 3) Start MongoDB in Docker and seed data
+### 3) Build and start the application using Docker 
 
 Requires Docker Desktop running.
 
 ```bash
 docker-compose up --build -d
-docker ps -a    # check that `mongo_db` and `data_seeding_gp` appeared
+docker ps -a    # check these containers `mongo_db`, `data_seeding_gp`, 'frontend_service', and 'chatbot_service' appeared
 ```
 
-Wait ~1 minute for seeding to finish, then verify:
+Wait ~1 minute for seeding to finish pushing data to the database, then verify:
 
 ```bash
 docker exec -it mongo_db /bin/bash
@@ -74,32 +73,26 @@ show collections   # expect: items, items_li
 exit
 ```
 
-(After seeding completes, you can optionally clean up the seeding image:)
+(After seeding completes, you can optionally clean up the seeding container and image:)
 
 ```bash
 docker rm -f data_seeding_gp
 docker rmi -f data_seeding_group_project:latest
 ```
 
-Common Mongo container actions:
+Common service container actions:
 
 ```bash
-docker restart mongo_db
-docker start mongo_db
-docker stop mongo_db
+docker restart <service_name>
+docker start <service_name>
+docker stop <service_name>
 ```
 
 ---
 
 ### 4) Run the web app (development)
 
-```bash
-npm run dev
-```
-
-App: http://localhost:3000
-
-Optional – Chatbot service: If your branch includes the chatbot microservice, start it from its folder with npm start (commonly runs at http://localhost:3010). Keep both services running during development.
+Once the building images and running containers via the docker-compose command are complete, the application (frontend_service) runs at http://localhost:3000.
 
 ---
 
@@ -109,34 +102,44 @@ Copy from .env.example then adjust as needed:
 
 ```bash
 # MongoDB credentials
-MONGODB_ROOT_USER=admin
-MONGODB_ROOT_PASSWORD=sit725groupproject
-MONGODB_APP_USER=sit725
-MONGODB_APP_PASSWORD=sit725groupproject
-
-# MongoDB connection (host/port)
-MONGODB_HOST=localhost
+MONGODB_ROOT_USER="admin"
+MONGODB_ROOT_PASSWORD="sit725groupproject"
+MONGODB_APP_USER="sit725"
+MONGODB_APP_PASSWORD="sit725groupproject"
+MONGODB_HOST="localhost"
 MONGODB_PORT=20725
+DB_NAME="SIT725GP"
+COLLECTION_ITEM_NAME="items"
+COLLECTION_ITEM_LI_NAME="items_li"
+COLLECTION_CHAT_NAME="conversations"
 
-# Database & collections
-DB_NAME=SIT725GP
-COLLECTION_ITEM_NAME=items
-COLLECTION_ITEM_LI_NAME=items_li
-COLLECTION_CHAT_NAME=conversations
+# # token lifetimes (strings like 10,, 7d are OK)
 
-# Google GenAI
-API_KEYS= API_KEY_1, API_KEY_2, API_KEY_3, etc
+JWT_ACCESS_SECRET=db3923b606fdbe9f83b8358aee52847acbfbfc30475173a872b65d909b098186
+JWT_REFRESH_SECRET=6ea10354c51071ae76a115b48cddd367da318850ecee7280fd2da8262d373706
+ ACCESS_TOKEN_TTL=1h
+REFRESH_TOKEN_TTL=1d
+ 
+# # local dev
+NODE_ENV=development
+
+#chatbot keys
+API_KEYS="<API_KEY_1>, <API_KEY_2>, <API_KEY_2>" #can be obtained via https://console.cloud.google.com/ (Note: enable Gemini API beforehand)
+#The more keys, the more stable operation is guaranteed.
 MODEL_NAME="gemini-2.0-flash"
-```
 
-Ensure these match the credentials in docker-compose.yml.
-If you change PORT, also adjust your dev links.
+#service ports
+CHATSERVICE_PORT=3010
+FRONTENDSERVICE_PORT=3000
+ 
+```
 
 ---
 
 ## 🧪 Testing
 
 ```bash
+docker exec -it frontend_service /bin/sh
 npm test
 ```
 
@@ -157,6 +160,11 @@ File: reviews.test.js
 Title truncation: safe single-ellipsis truncation within limits, preferring space breaks.
 File: truncate.test.js
 
+Data connection: Check connection to database and test some simple queries
+File: database.test.js
+
+Item APIs: Check out some APIs that interact with collections 'Items'
+File: itemsAPI.test.js
 ---
 
 ## 🔌 API (dev endpoints)
@@ -179,18 +187,11 @@ ads-price-compare/
 ├── data_process/
 ├── data_seeing/
 ├── docs/
+├── frontend
 ├── mongo_init/          
-├── public/             
-├── scripts/            
-├── src/
-├── test/
-├── test-arifacts/
-├── views/
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
-├── package-lock.json
-├── package.json
 └── README.md
 ```
 
