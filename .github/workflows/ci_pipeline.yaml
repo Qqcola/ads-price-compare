@@ -43,3 +43,9 @@ jobs:
             echo "No docker compose found"
             exit 1
           fi
+      
+      - name: Build images and run container
+        run: |
+          docker compose --env-file .env.example up -d --build
+          sleep 10
+          docker ps -a
