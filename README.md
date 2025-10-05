@@ -124,7 +124,7 @@ REFRESH_TOKEN_TTL=1d
 NODE_ENV=development
 
 #chatbot keys
-API_KEYS="<API_KEY_1>, <API_KEY_2>, <API_KEY_2>" #can be obtained via https://console.cloud.google.com/ (Note: enable Gemini API beforehand)
+API_KEYS="<API_KEY_1>, <API_KEY_2>, <API_KEY_3>, etc" #can be obtained via https://console.cloud.google.com/ (Note: enable Gemini API beforehand)
 #The more keys, the more stable operation is guaranteed.
 MODEL_NAME="gemini-2.0-flash"
 
