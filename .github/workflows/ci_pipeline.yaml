@@ -53,3 +53,7 @@ jobs:
       - name: Test data push into the MongoDB server
         run: |
           docker exec mongo_db mongosh "mongodb://sit725:sit725groupproject@localhost:27017/SIT725GP" --eval "if (db.getCollectionInfos({ name: 'items' }).length > 0) { console.log('Collection found'); quit(0); } else { console.log('Collection NOT found.'); quit(1); }"
+      
+      - name: Unit tests
+        run: |
+          docker exec frontend_service npm test
