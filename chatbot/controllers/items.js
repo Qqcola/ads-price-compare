@@ -1,7 +1,6 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-require("dotenv").config();
 const Items = require("../models/Items");
 const template = require("../template/prompt_template.json");
 

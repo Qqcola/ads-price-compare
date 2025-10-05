@@ -11,7 +11,6 @@ Built with **Node.js/Express (MVC)**, **MongoDB (Docker)**, and **Materialize CS
 - **My List (CRUD)**: save/remove products to a personal list; view item details; jump to retailer pages.
 - **Per-user Lists**: list operations are scoped by **session/email**, so each user sees their own items.
 - **Item Detail View**: structured pricing, retailer links, reviews label logic, and safe title truncation.
-- **Pagination**: ~20 items per page with consistent totals and bounds handling.
 - **Chatbot**: assists with finding products and general queries (service integration documented below).
 - **Polished UI**: Materialize grid/spacing refinements, responsive layout, sensible truncation with single ellipsis.
 

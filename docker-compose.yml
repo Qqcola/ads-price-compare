@@ -11,12 +11,55 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${DB_NAME}
-    env_file:
-      - .env
+      MONGO_APP_USER: ${MONGODB_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGODB_APP_PASSWORD} 
     volumes:
       - ./mongo_init:/docker-entrypoint-initdb.d:ro
       - ./mongo_data:/data/db
     restart: unless-stopped
+  
+  chatbot_service:
+    build:
+      context: ./chatbot
+      dockerfile: Dockerfile
+    container_name: chatbot_service
+    image: chatbot_service:latest
+    ports:
+      - "${CHATSERVICE_PORT}:${CHATSERVICE_PORT}"
+    environment:
+      MONGODB_APP_USER: ${MONGODB_APP_USER}
+      MONGODB_APP_PASSWORD: ${MONGODB_APP_PASSWORD}
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_DB_NAME: ${DB_NAME}
+      PORT: ${CHATSERVICE_PORT}
+      MODEL_NAME: ${MODEL_NAME}
+      API_KEYS: ${API_KEYS}
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+  
+  frontend_service:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_service
+    image: frontend_service:latest
+    ports:
+      - "${FRONTENDSERVICE_PORT}:${FRONTENDSERVICE_PORT}"
+    environment:
+      MONGODB_APP_USER: ${MONGODB_APP_USER}
+      MONGODB_APP_PASSWORD: ${MONGODB_APP_PASSWORD}
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_DB_NAME: ${DB_NAME}
+      PORT: ${FRONTENDSERVICE_PORT}
+      CHAT_SERVICE_URL: "http://chatbot_service:${CHATSERVICE_PORT}"
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+    restart: unless-stopped
+    depends_on:
+      - chatbot_service
   
   data_seeding:
     build:
@@ -31,13 +74,10 @@ services:
       MONGODB_APP_USER: ${MONGODB_APP_USER}
       MONGODB_APP_PASSWORD: ${MONGODB_APP_PASSWORD}
       MONGODB_HOST: mongodb
-      # MONGODB_PORT: ${MONGODB_PORT}
       MONGODB_PORT: 27017
       DB_NAME: ${DB_NAME}
       COLLECTION_ITEM_NAME: ${COLLECTION_ITEM_NAME}
       COLLECTION_ITEM_LI_NAME: ${COLLECTION_ITEM_LI_NAME}
-    env_file:
-      - .env
     volumes:
       - ./data_process:/data_process
     depends_on:
