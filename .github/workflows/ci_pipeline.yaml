@@ -7,28 +7,37 @@ on:
     branches:
       - main
     paths:
-      - 'frontend/**'
-      - 'chatbot/**'
-      - '.github/workflows/ci_pipeline.yaml'
+      - "frontend/**"
+      - "chatbot/**"
+      - ".github/workflows/ci_pipeline.yaml"
 
   pull_request:
     branches:
       - main
     paths:
-      - 'frontend/**'
-      - 'chatbot/**'
+      - "frontend/**"
+      - "chatbot/**"
 
 jobs:
-  deploy_frontend:
+  test-application:
     runs-on: ubuntu-latest
     environment: Development
 
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Check docker compose version
-      run: |
-        docker --version || true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check docker compose version
+        run: |
+          docker --version || true
+          # Try plugin form first (recommended)
+          if docker compose version >/dev/null 2>&1; then
+            docker compose version
+          elif command -v docker-compose >/dev/null 2>&1; then
+            docker-compose --version
+          else
+            echo "No docker compose found"
+            exit 1
+          fi
