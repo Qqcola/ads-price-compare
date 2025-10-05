@@ -51,7 +51,7 @@ describe("MongoDB Connection and Data Tests", function() {
         expect(collectionNames).to.include(COLLECTION_ITEM_NAME, `Collection '${COLLECTION_ITEM_NAME}' not found in DB`);
     });
     it(`should have at least a numer of items in the collection`, async function() {
-        const MIN_ITEM_COUNT = 15000;
+        const MIN_ITEM_COUNT = process.env.DEPLOYMENT_ENV == 'github'? 15 : 15000;
         const count = await Items.countDocuments();
         expect(count).to.be.at.least(MIN_ITEM_COUNT, `Item count (${count}) is less than minimum required (${MIN_ITEM_COUNT})`);
     });
@@ -70,8 +70,8 @@ describe("MongoDB Connection and Data Tests", function() {
             expect(item).to.exist;
             expect(item.name.toLowerCase()).to.equal("Panadol Rapid Paracetamol Pain Relief 16 Caplets".toLowerCase());
         });
-        it("should find items with brands: Blackmores", async function() {
-            const items = await Items.find({ brand: "Blackmores" });
+        it("should find items with brands: Panadol", async function() {
+            const items = await Items.find({ brand: "Panadol" });
             expect(items.length).to.be.above(80);
         });
         it("No product should have a negative price", async function() {

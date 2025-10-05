@@ -57,6 +57,7 @@ services:
       CHAT_SERVICE_URL: "http://chatbot_service:${CHATSERVICE_PORT}"
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      DEPLOYMENT_ENV: dev
     restart: unless-stopped
     depends_on:
       - chatbot_service
@@ -78,6 +79,7 @@ services:
       DB_NAME: ${DB_NAME}
       COLLECTION_ITEM_NAME: ${COLLECTION_ITEM_NAME}
       COLLECTION_ITEM_LI_NAME: ${COLLECTION_ITEM_LI_NAME}
+      DEPLOYMENT_ENV: ${DEPLOYMENT_ENV}
     volumes:
       - ./data_process:/data_process
     depends_on:

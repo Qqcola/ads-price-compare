@@ -17,8 +17,12 @@ mongo_connection = {'MONGO_ROOT_USER': os.getenv('MONGODB_ROOT_USER'),
                     'MONGO_APP_USER': os.getenv('MONGODB_APP_USER'),
                     'MONGO_APP_PASSWORD': os.getenv('MONGODB_APP_PASSWORD')}
 
-with open('../data_process/items_detail.json', 'r') as file:
-    list_items = json.load(file)
+if os.getenv('DEPLOYMENT_ENV', 'dev') == 'github':
+    with open('../data_process/items_detail_samples.json', 'r') as file:
+        list_items = json.load(file)
+else:
+    with open('../data_process/items_detail.json', 'r') as file:
+        list_items = json.load(file)
 
 list_items_li = [{'name': item['name']} for item in list_items]
 
